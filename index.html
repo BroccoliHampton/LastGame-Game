@@ -202,7 +202,7 @@
         const gameView = document.getElementById('viewContainer');
         const muteBtn = document.getElementById('muteBtn');
         const statsContainer = document.getElementById('statsContainer');
-        const gameContainer = document.querySelector('.game-container'); // NEW
+        const gameContainer = document.querySelector('.game-container');
 
         // HUD Elements
         const hudTime = document.getElementById('hud-time');
@@ -213,7 +213,7 @@
         // GAME CONSTANTS
         const FPS = 60;
         
-        // --- GRAVEYARD PALETTE ---
+        // --- PALETTES ---
         const C_BG_VERY_DARK = '#110515';     
         const C_GRASS_PRIMARY = '#FFFFFF';    
         const C_GRASS_SHADE = '#666666';      
@@ -222,7 +222,6 @@
         const C_STONE_SHADE = '#666666';      
         const C_FRIEND_SOUL = '#FF99CC';
 
-        // --- DUNGEON PALETTE (NEW) ---
         const C_DUNGEON_BG = '#000000';
         const C_DUNGEON_GROUND = '#1a1a1a';
         const C_DUNGEON_GRIT = '#333333';
@@ -231,17 +230,14 @@
         const C_DUNGEON_STONE_SHADE = '#222222';
         const C_DUNGEON_SOUL = '#66FF66';
 
-        // --- SHARED PALETTE ---
-        const C_PLAYER_BLACK = '#666666';
-        const C_PLAYER_RED = '#FF5555';
-        const C_PLAYER_GREEN = '#22AA22';
-        const C_PLAYER_PINK = '#FF66AA';
-        const C_PLAYER_BLUE = '#55BBFF';
-        const C_PLAYER_ORANGE = '#FFAA00';
-        const C_FLEEING_SOUL = '#55FFFF';
-        const C_SHIELD_COLOR = '#8888FF';
-        const C_SUPER_SHIELD_COLOR = '#AA00FF';
-        const C_ENEMY_COLOR = '#FF4444';
+        const C_PARADISE_GROUND = '#E5E5E5';
+        const C_PARADISE_GRIT = '#FFFFFF';
+        const C_PARADISE_STONE = '#D0D0D0';
+        const C_PARADISE_SOUL = '#FFD700';
+        const C_PLAYER_PARADISE = '#FFFFFF';
+
+        const C_PLAYER_BLACK = '#666666', C_PLAYER_RED = '#FF5555', C_PLAYER_GREEN = '#22AA22', C_PLAYER_PINK = '#FF66AA', C_PLAYER_BLUE = '#55BBFF', C_PLAYER_ORANGE = '#FFAA00';
+        const C_FLEEING_SOUL = '#55FFFF', C_SHIELD_COLOR = '#8888FF', C_SUPER_SHIELD_COLOR = '#AA00FF', C_ENEMY_COLOR = '#FF4444';
         
         // World Map Constants
         const MAP_PIXEL_WIDTH = 4000;  
@@ -249,534 +245,395 @@
 
         // Game State Variables
         let gameState = 'characterSelect';
-        let gameMode = 'graveyard';
-        let playerColor;
-        let graveyardPlayerColor; 
-        let ghostsCollected = 0; 
-        let savedSouls = 0; 
-        let frameCount = 0; 
-        let gameTime = 0; 
-        let playerTrail = []; 
-        let shieldLevel = 0;
+        let gameMode = 'graveyard'; // graveyard, dungeon, paradise
+        let playerColor, graveyardPlayerColor;
+        let ghostsCollected = 0, savedSouls = 0, frameCount = 0, gameTime = 0, shieldLevel = 0;
+        let playerTrail = [], mistParticles = [], groundTexture = [], mapObjects = [], characterOptions = [];
+        let selectedCharacterIndex = -1, beginButtonRect = {}, isMuted = false;
+        let worldX = 0, worldY = 0; 
         
-        let numericGamePrice = 0;
-        let selectedCharacterIndex = -1;
-        let beginButtonRect = {};
-
-        let isMuted = false;
-
-        let worldX = 0; 
-        let worldY = 0; 
+        const playerWidth = 20, playerSpeed = 3, playerHeight = playerWidth*1.5, playerCollisionScale=0.8, PLAYER_Y_OFFSET_RATIO = 0.1;
+        let isMovingForward = false, isMovingBackward = false, isMovingLeft = false, isMovingRight = false, playerDirection = 'forward';
         
-        const playerWidth = 20;
-        const playerSpeed = 3; 
-        const playerHeight = playerWidth * 1.5; 
-        const playerCollisionScale = 0.8; 
-        const PLAYER_Y_OFFSET_RATIO = 0.1; 
-        
-        let isMovingForward = false;
-        let isMovingBackward = false;
-        let isMovingLeft = false; 
-        let isMovingRight = false; 
-        let playerDirection = 'forward'; 
-        
-        let mapObjects = []; 
-        let cryptKeeper = { x: MAP_PIXEL_WIDTH - 250, y: MAP_PIXEL_HEIGHT - 350, w: 40, h: 60, type: 'KEEPER' };
+        let cryptKeeper = { x: MAP_PIXEL_WIDTH-250, y: MAP_PIXEL_HEIGHT-350, w: 40, h: 60, type: 'KEEPER' };
         let dungeonDoor = { x: 150, y: MAP_PIXEL_HEIGHT - 250, w: 80, h: 120, type: 'DOOR' };
-        let returnPortal = { x: MAP_PIXEL_WIDTH - 250, y: MAP_PIXEL_HEIGHT - 250, w: 80, h: 80, type: 'PORTAL' };
-        let characterOptions = [];
+        let paradiseDoor = { x: MAP_PIXEL_WIDTH - 250, y: 150, w: 80, h: 120, type: 'PARADISE_DOOR' };
+        let dungeonReturnPortal = { x: MAP_PIXEL_WIDTH - 250, y: MAP_PIXEL_HEIGHT - 250, w: 80, h: 80, type: 'PORTAL' };
+        let paradiseReturnPortal = { x: MAP_PIXEL_WIDTH - 250, y: MAP_PIXEL_HEIGHT - 250, w: 80, h: 80, type: 'PARADISE_PORTAL' };
 
-        let mistParticles = [];
-        const MIST_COUNT = 100;
-        
-        let groundTexture = [];
-        const TEXTURE_DENSITY = 3500; 
-        const TEXTURE_SIZE = 2;
+        const MIST_COUNT = 100, TEXTURE_DENSITY = 3500, TEXTURE_SIZE = 2;
 
-        // --- TONE.JS MUSIC SETUP ---
-        let windNoise = null, windFilter = null, windLoop = null, chimeSynth = null, chimeLoop = null;  
+        let windNoise, windFilter, windLoop, chimeSynth, chimeLoop;  
 
         function setupMusic() {
             Tone.Transport.cancel();
-            if (windNoise) windNoise.dispose(); if (windFilter) windFilter.dispose(); if (windLoop) windLoop.dispose();
-            if (chimeSynth) chimeSynth.dispose(); if (chimeLoop) chimeLoop.dispose();   
-
+            if (windNoise) [windNoise, windFilter, windLoop, chimeSynth, chimeLoop].forEach(n => n.dispose());
             const reverb = new Tone.Reverb(4).toDestination();
-            reverb.wet.value = 0.5; reverb.decay = 5;
-            
-            windNoise = new Tone.Noise("white").start(); windNoise.volume.value = -20; 
-            windFilter = new Tone.Filter(300, "lowpass").connect(reverb); windNoise.connect(windFilter);
-            
-            const sweepDuration = '20s'; windFilter.frequency.value = 200; 
-            windLoop = new Tone.Loop(time => { windFilter.frequency.linearRampTo(Math.random() * 400 + 200, sweepDuration, Tone.now()); }, sweepDuration).start('1s');
-            
+            reverb.wet.value = 0.5;
+            reverb.decay = 5;
+            windNoise = new Tone.Noise("white").start();
+            windNoise.volume.value = -20;
+            windFilter = new Tone.Filter(300, "lowpass").connect(reverb);
+            windNoise.connect(windFilter);
+            windLoop = new Tone.Loop(t => { windFilter.frequency.linearRampTo(Math.random() * 400 + 200, '20s', Tone.now()) }, '20s').start('1s');
             chimeSynth = new Tone.FMSynth({ modulationIndex: 12, envelope: { attack: 0.01, decay: 0.5, sustain: 0.1, release: 0.5 }, modulation: { type: "square" }, volume: -15 }).connect(reverb);
-            const melody = ["A3", "G3", "F3", "D3"]; 
-            chimeLoop = new Tone.Loop(time => {
-                chimeSynth.triggerAttackRelease(melody[0], "8n", time);
-                chimeSynth.triggerAttackRelease(melody[1], "8n", time + Tone.Time("8n").toSeconds());
-                chimeSynth.triggerAttackRelease(melody[2], "8n", time + Tone.Time("4n").toSeconds());
-                chimeSynth.triggerAttackRelease(melody[3], "8n", time + Tone.Time("4n + 8n").toSeconds());
+            const melody = ["A3", "G3", "F3", "D3"];
+            chimeLoop = new Tone.Loop(t => {
+                chimeSynth.triggerAttackRelease(melody[0], "8n", t);
+                chimeSynth.triggerAttackRelease(melody[1], "8n", t + Tone.Time("8n").toSeconds());
+                chimeSynth.triggerAttackRelease(melody[2], "8n", t + Tone.Time("4n").toSeconds());
+                chimeSynth.triggerAttackRelease(melody[3], "8n", t + Tone.Time("4n + 8n").toSeconds());
             }, "4m").start('1s');
-
-            Tone.Transport.bpm.value = 60; Tone.Transport.start();
+            Tone.Transport.bpm.value = 60;
+            Tone.Transport.start();
         }
 
-        // --- Utility Functions ---
-        
         function initGroundTexture() {
-             groundTexture = []; for(let i = 0; i < TEXTURE_DENSITY; i++) { groundTexture.push({ x: Math.random() * MAP_PIXEL_WIDTH, y: Math.random() * MAP_PIXEL_HEIGHT }); }
+            groundTexture = [];
+            for (let i = 0; i < TEXTURE_DENSITY; i++) {
+                groundTexture.push({ x: Math.random() * MAP_PIXEL_WIDTH, y: Math.random() * MAP_PIXEL_HEIGHT });
+            }
         }
-        
+
         function initCityMap() {
             mapObjects = [];
-            const blockScale = 150; 
-            const gridSizeX = MAP_PIXEL_WIDTH / blockScale; const gridSizeY = MAP_PIXEL_HEIGHT / blockScale;
-
-            for (let i = 0; i < gridSizeX; i++) { for (let j = 0; j < gridSizeY; j++) {
-                let x = i * blockScale; let y = j * blockScale; let addedObject = false;
-                if (Math.random() < 0.30) { 
-                    const isCrypt = Math.random() < 0.35; let w, h;
-                    if (isCrypt) { w = blockScale * (0.8 + Math.random() * 0.2); h = blockScale * (0.5 + Math.random() * 0.3); } 
-                    else { x += blockScale * Math.random() * 0.4; y += blockScale * Math.random() * 0.4; w = blockScale * 0.2; h = blockScale * 0.4; }
-                    mapObjects.push({ x, y, w, h, type: isCrypt ? 'CRYPT' : 'STONE', collected: false, baseSpeed: 0, currentSpeed: 0 }); 
-                    addedObject = true;
-                } else if (Math.random() < (gameMode === 'dungeon' ? 0.12 : 0.05)) {
-                    const s = 15; x += blockScale*0.5-s/2; y += blockScale*0.5-s/2; mapObjects.push({ x, y, w: s, h: s, type: 'FRIEND', collected: false, baseSpeed: 0, currentSpeed: 0 }); addedObject = true;
-                } else if (Math.random() < (gameMode === 'dungeon' ? 0.05 : 0.02)) {
-                    const s = 15; x += blockScale*0.5-s/2; y += blockScale*0.5-s/2; mapObjects.push({ x, y, w: s, h: s, type: 'FLEEING_SOUL', collected: false, baseSpeed: 2.5, currentSpeed: 2.5 }); addedObject = true;
-                } else if (Math.random() < 0.03) { const s = 18; x += blockScale*0.5-s/2; y += blockScale*0.5-s/2; mapObjects.push({ x, y, w: s, h: s, type: 'ENEMY', collected: false, baseSpeed: 0.8, currentSpeed: 0.8 }); addedObject = true;
-                } else if (Math.random() < 0.015) { const s = 16; x += blockScale*0.5-s/2; y += blockScale*0.5-s/2; mapObjects.push({ x, y, w: s, h: s, type: 'SHIELD', collected: false, baseSpeed: 0, currentSpeed: 0 }); addedObject = true;
-                } 
-                if (!addedObject) {
-                    if (Math.random() < 0.07) { const s = blockScale*0.6; x+=blockScale*0.5-s/2; y+=blockScale*0.7-s/2; mapObjects.push({x,y,w:s,h:s*1.5,type:'TREE',collected:false,baseSpeed:0,currentSpeed:0});
-                    } else if (Math.random() < 0.05) { const s=10; x+=blockScale*Math.random()*0.8; y+=blockScale*Math.random()*0.8; mapObjects.push({x,y,w:s,h:s*0.5,type:'BONES',collected:false,baseSpeed:0,currentSpeed:0});
-                    } else if (Math.random() < 0.05) { const s=15; x+=blockScale*Math.random()*0.8; y+=blockScale*Math.random()*0.8; mapObjects.push({x,y,w:s,h:s*0.4,type:'MOUND',collected:false,baseSpeed:0,currentSpeed:0});
-                    } else if (Math.random() < 0.08) { const s=20; x+=blockScale*Math.random()*0.8; y+=blockScale*Math.random()*0.8; mapObjects.push({x,y,w:s,h:s*0.5,type:'BLOSSOM',collected:false,baseSpeed:0,currentSpeed:0});
+            const blockScale = 150, gridSizeX = MAP_PIXEL_WIDTH / blockScale, gridSizeY = MAP_PIXEL_HEIGHT / blockScale;
+            for (let i = 0; i < gridSizeX; i++) {
+                for (let j = 0; j < gridSizeY; j++) {
+                    let x = i * blockScale, y = j * blockScale, added = false;
+                    if (Math.random() < 0.3) {
+                        const isCrypt = Math.random() < 0.35;
+                        let w = blockScale * (isCrypt ? 0.8 + Math.random() * 0.2 : 0.2), h = blockScale * (isCrypt ? 0.5 + Math.random() * 0.3 : 0.4);
+                        if (!isCrypt) { x += blockScale * Math.random() * 0.4; y += blockScale * Math.random() * 0.4; }
+                        mapObjects.push({ x, y, w, h, type: isCrypt ? 'CRYPT' : 'STONE', collected: false, baseSpeed: 0, currentSpeed: 0 });
+                        added = true;
+                    } else if (Math.random() < (gameMode === 'dungeon' || gameMode === 'paradise' ? 0.12 : 0.05)) {
+                        const s = 15; x += blockScale * 0.5 - s / 2; y += blockScale * 0.5 - s / 2; mapObjects.push({ x, y, w: s, h: s, type: 'FRIEND', collected: false, baseSpeed: 0, currentSpeed: 0 }); added = true;
+                    } else if (Math.random() < (gameMode === 'dungeon' || gameMode === 'paradise' ? 0.05 : 0.02)) {
+                        const s = 15; x += blockScale * 0.5 - s / 2; y += blockScale * 0.5 - s / 2; mapObjects.push({ x, y, w: s, h: s, type: 'FLEEING_SOUL', collected: false, baseSpeed: 2.5, currentSpeed: 2.5 }); added = true;
+                    } else if (Math.random() < 0.03) {
+                        const s = 18; x += blockScale * 0.5 - s / 2; y += blockScale * 0.5 - s / 2; mapObjects.push({ x, y, w: s, h: s, type: 'ENEMY', collected: false, baseSpeed: 0.8, currentSpeed: 0.8 }); added = true;
+                    } else if (Math.random() < 0.015) {
+                        const s = 16; x += blockScale * 0.5 - s / 2; y += blockScale * 0.5 - s / 2; mapObjects.push({ x, y, w: s, h: s, type: 'SHIELD', collected: false, baseSpeed: 0, currentSpeed: 0 }); added = true;
+                    }
+                    if (!added) {
+                        if (Math.random() < 0.07) { const s = blockScale * 0.6; x += blockScale * 0.5 - s / 2; y += blockScale * 0.7 - s / 2; mapObjects.push({ x, y, w: s, h: s * 1.5, type: 'TREE', collected: false, baseSpeed: 0, currentSpeed: 0 }); }
+                        else if (Math.random() < 0.05) { const s = 10; x += blockScale * Math.random() * 0.8; y += blockScale * Math.random() * 0.8; mapObjects.push({ x, y, w: s, h: s * 0.5, type: 'BONES', collected: false, baseSpeed: 0, currentSpeed: 0 }); }
+                        else if (Math.random() < 0.05) { const s = 15; x += blockScale * Math.random() * 0.8; y += blockScale * Math.random() * 0.8; mapObjects.push({ x, y, w: s, h: s * 0.4, type: 'MOUND', collected: false, baseSpeed: 0, currentSpeed: 0 }); }
+                        else if (Math.random() < 0.08) {
+                            const s = 20;
+                            const blossomX = x + blockScale * Math.random() * 0.8;
+                            const blossomY = y + blockScale * Math.random() * 0.8;
+                            const pixelPositions = [];
+                            for (let i = 0; i < 6; i++) {
+                                pixelPositions.push({ x: Math.random() * s, y: Math.random() * (s * 0.5) });
+                            }
+                            mapObjects.push({ x: blossomX, y: blossomY, w: s, h: s * 0.5, type: 'BLOSSOM', pixelPositions, collected: false, baseSpeed: 0, currentSpeed: 0 });
+                        }
                     }
                 }
-            }}
-            
-            const safeZoneMapX = 200, safeZoneMapY = 200, safeRadius = 150; 
-            mapObjects = mapObjects.filter(obj => {
-                if (obj.type === 'CRYPT' || obj.type === 'STONE') {
-                    return !(obj.x < safeZoneMapX+safeRadius && obj.x+obj.w > safeZoneMapX-safeRadius && obj.y < safeZoneMapY+safeRadius && obj.y+obj.h > safeZoneMapY-safeRadius);
-                } return true;
-            });
-
-            if (gameMode === 'graveyard') {
-                mapObjects.push(cryptKeeper);
-                mapObjects.push(dungeonDoor);
-            } else { // dungeon
-                mapObjects.push(returnPortal);
             }
-
+            mapObjects = mapObjects.filter(o => { if (o.type === 'CRYPT' || o.type === 'STONE') { const r = 150, sX = 200, sY = 200; return !(o.x < sX + r && o.x + o.w > sX - r && o.y < sY + r && o.y + o.h > sY - r); } return true; });
+            if (gameMode === 'graveyard') { mapObjects.push(cryptKeeper, dungeonDoor); }
+            else if (gameMode === 'dungeon') { mapObjects.push(dungeonReturnPortal, paradiseDoor); }
+            else if (gameMode === 'paradise') { mapObjects.push(paradiseReturnPortal); }
             initGroundTexture();
         }
 
-        function checkAABB(x1, y1, w1, h1, x2, y2, w2, h2) { return x1<x2+w2 && x1+w1>x2 && y1<y2+h2 && y1+h1>y2; }
+        function checkAABB(x1, y1, w1, h1, x2, y2, w2, h2) { return x1 < x2 + w2 && x1 + w1 > x2 && y1 < y2 + h2 && y1 + h1 > y2; }
+        function checkCollision(pWX, pWY) { const pO = canvas.height * PLAYER_Y_OFFSET_RATIO, fX = -pWX, fY = -pWY + pO, cW = playerWidth * playerCollisionScale, cH = playerHeight * playerCollisionScale; for (const b of mapObjects) { if ((b.type === 'CRYPT' || b.type === 'STONE') && checkAABB(fX - cW / 2, fY - cH / 2, cW, cH, b.x, b.y, b.w, b.h)) return true; } return false; }
+        function checkEnemyCollision(e, pX, pY) { for (const b of mapObjects) { if ((b.type === 'CRYPT' || b.type === 'STONE') && checkAABB(pX - e.w / 2, pY - e.h / 2, e.w, e.h, b.x, b.y, b.w, b.h)) return true; } return false; }
 
-        function checkCollision(potentialWorldX, potentialWorldY) {
-            const pYOff = canvas.height*PLAYER_Y_OFFSET_RATIO, fMapX=-potentialWorldX, fMapY=-potentialWorldY+pYOff, cW=playerWidth*playerCollisionScale, cH=playerHeight*playerCollisionScale;
-            for (const b of mapObjects) { if ((b.type==='CRYPT'||b.type==='STONE')&&checkAABB(fMapX-cW/2, fMapY-cH/2, cW, cH, b.x, b.y, b.w, b.h)) return true; } return false; 
-        }
-
-        function checkEnemyCollision(enemy, pX, pY) {
-            for (const b of mapObjects) { if ((b.type==='CRYPT'||b.type==='STONE')&&checkAABB(pX-enemy.w/2,pY-enemy.h/2,enemy.w,enemy.h,b.x,b.y,b.w,b.h)) return true; } return false; 
-        }
-
-        function resizeCanvas() {
-            const parent = gameView; 
-            if (parent) { canvas.width = parent.clientWidth; canvas.height = parent.clientHeight; }
-            mapCanvas.width = 40;
-            mapCanvas.height = 60;
-
-            setupCharacterOptions(); initMistParticles(); draw();
-        }
+        function resizeCanvas() { const p = gameView; if (p) { canvas.width = p.clientWidth; canvas.height = p.clientHeight; } mapCanvas.width = 40; mapCanvas.height = 60; setupCharacterOptions(); initMistParticles(); draw(); }
         
-        function setupCharacterOptions() {
-            const charSize = 40;
-            const options = [
-                {n:'BLACK',c:C_PLAYER_BLACK}, {n:'RED',c:C_PLAYER_RED}, {n:'GREEN',c:C_PLAYER_GREEN},
-                {n:'PINK',c:C_PLAYER_PINK}, {n:'BLUE',c:C_PLAYER_BLUE}, {n:'ORANGE',c:C_PLAYER_ORANGE}
-            ];
-            const totalWidth = options.length * charSize * 1.5;
-            const startX = (canvas.width - totalWidth) / 2 + (charSize * 1.5) / 2;
-
-            characterOptions = options.map((opt, i) => ({
-                ...opt,
-                x: startX + i * charSize * 1.5,
-                y: canvas.height * 0.40, 
-                w: charSize,
-                h: charSize * 1.5
-            }));
-        }
+        function setupCharacterOptions() { const s = 40, opts = [{c: C_PLAYER_BLACK}, {c: C_PLAYER_RED}, {c: C_PLAYER_GREEN}, {c: C_PLAYER_PINK}, {c: C_PLAYER_BLUE}, {c: C_PLAYER_ORANGE}], tW = opts.length * s * 1.5, sX = (canvas.width - tW) / 2 + (s * 1.5) / 2; characterOptions = opts.map((o, i) => ({ ...o, x: sX + i * s * 1.5, y: canvas.height * 0.5, w: s, h: s * 1.5 })); }
         
-        function initMistParticles() {
-            mistParticles=[]; for(let i=0;i<MIST_COUNT;i++) { mistParticles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,s:Math.random()*2+1.5,d:Math.random()*0.7+0.3,v:Math.random()*0.5+0.5}); }
-        }
+        function initMistParticles() { mistParticles = []; for (let i = 0; i < MIST_COUNT; i++) { mistParticles.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, s: Math.random() * 2 + 1.5, d: Math.random() * 0.7 + 0.3, v: Math.random() * 0.5 + 0.5 }); } }
+        function updateMistParticles() { mistParticles.forEach(m => { m.y += m.v; m.x -= m.d; if (m.y > canvas.height) { m.y = -m.s; m.x = Math.random() * canvas.width; } if (m.x < 0) m.x = canvas.width; else if (m.x > canvas.width) m.x = 0; }); }
+        function updateEnemies(pX, pY) { const r = 200, f = 0.015, mS = playerSpeed - 0.2; mapObjects.forEach(o => { if (o.type === 'ENEMY' && !o.collected) { o.currentSpeed = Math.min(o.baseSpeed + gameTime * f, mS); const dX = pX - o.x, dY = pY - o.y; if (Math.sqrt(dX * dX + dY * dY) < r) { const a = Math.atan2(dY, dX), mX = Math.cos(a) * o.currentSpeed, mY = Math.sin(a) * o.currentSpeed; if (!checkEnemyCollision(o, o.x + mX, o.y + mY)) { o.x += mX; o.y += mY; } } } }); }
+        function updateFleeingSouls(pX, pY) { const r = 150; mapObjects.forEach(o => { if (o.type === 'FLEEING_SOUL' && !o.collected) { const dX = pX - o.x, dY = pY - o.y; if (Math.sqrt(dX * dX + dY * dY) < r) { const a = Math.atan2(dY, dX) + Math.PI, mX = Math.cos(a) * o.currentSpeed, mY = Math.sin(a) * o.currentSpeed; let pX_n = o.x + mX, pY_n = o.y + mY; pX_n = Math.max(0, Math.min(MAP_PIXEL_WIDTH - o.w, pX_n)); pY_n = Math.max(0, Math.min(MAP_PIXEL_HEIGHT - o.h, pY_n)); if (!checkEnemyCollision(o, pX_n, pY_n)) { o.x = pX_n; o.y = pY_n; } } } }); }
 
-        function updateMistParticles() {
-            mistParticles.forEach(m=>{m.y+=m.v;m.x-=m.d; if(m.y>canvas.height){m.y=-m.s;m.x=Math.random()*canvas.width;} if(m.x<0)m.x=canvas.width; else if(m.x>canvas.width)m.x=0;});
-        }
+        function switchGameMode(newMode) { isMovingForward = false; isMovingBackward = false; isMovingLeft = false; isMovingRight = false; gameMode = newMode; if (gameMode === 'dungeon') { playerColor = C_PLAYER_GREEN; worldX = -250; worldY = -250; } else if (gameMode === 'paradise') { playerColor = C_PLAYER_PARADISE; worldX = -250; worldY = -250; } else { playerColor = graveyardPlayerColor; worldX = -(dungeonDoor.x + dungeonDoor.w / 2); worldY = -(dungeonDoor.y + dungeonDoor.h + 20); } initCityMap(); }
 
-        function updateEnemies(pX, pY) {
-            const chaseR=200, spFactor=0.015, maxSp=playerSpeed-0.2;
-            mapObjects.forEach(o=>{if(o.type==='ENEMY'&&!o.collected){const cSp=o.baseSpeed+(gameTime*spFactor);o.currentSpeed=Math.min(cSp,maxSp);const dX=pX-o.x,dY=pY-o.y,dist=Math.sqrt(dX*dX+dY*dY);if(dist<chaseR){const ang=Math.atan2(dY,dX),mX=Math.cos(ang)*o.currentSpeed,mY=Math.sin(ang)*o.currentSpeed;if(!checkEnemyCollision(o,o.x+mX,o.y+mY)){o.x+=mX;o.y+=mY;}}}});
-        }
+        function updatePlayerTrail(hX, hY) { let a = true; if (playerTrail.length > 0) { const l = playerTrail[0], dX = hX - l.x, dY = hY - l.y; if (Math.sqrt(dX * dX + dY * dY) < playerWidth * 0.75) a = false; } if (a) playerTrail.unshift({ x: hX, y: hY }); while (playerTrail.length > ghostsCollected) playerTrail.pop(); }
 
-        function updateFleeingSouls(pX, pY) {
-            const detR=150; mapObjects.forEach(o=>{if(o.type==='FLEEING_SOUL'&&!o.collected){const dX=pX-o.x,dY=pY-o.y,dist=Math.sqrt(dX*dX+dY*dY);if(dist<detR){const ang=Math.atan2(dY,dX)+Math.PI,mX=Math.cos(ang)*o.currentSpeed,mY=Math.sin(ang)*o.currentSpeed;let potX=o.x+mX,potY=o.y+mY;potX=Math.max(0,Math.min(MAP_PIXEL_WIDTH-o.w,potX));potY=Math.max(0,Math.min(MAP_PIXEL_HEIGHT-o.h,potY));if(!checkEnemyCollision(o,potX,potY)){o.x=potX;o.y=potY;}}}});
-        }
-
-        function switchGameMode(newMode) {
-            isMovingForward = false; isMovingBackward = false; isMovingLeft = false; isMovingRight = false;
-            gameMode = newMode;
-            
-            if (gameMode === 'dungeon') {
-                playerColor = C_PLAYER_GREEN;
-                worldX = -250; 
-                worldY = -250;
-            } else { 
-                playerColor = graveyardPlayerColor;
-                worldX = -(dungeonDoor.x + dungeonDoor.w/2);
-                worldY = -(dungeonDoor.y + dungeonDoor.h + 20);
-            }
-            initCityMap();
-        }
-
-        // --- Game Logic ---
-
-        function updatePlayerTrail(hX, hY) {
-            let add=true;if(playerTrail.length>0){const lS=playerTrail[0],dX=hX-lS.x,dY=hY-lS.y;if(Math.sqrt(dX*dX+dY*dY)<playerWidth*0.75)add=false;} if(add)playerTrail.unshift({x:hX,y:hY}); while(playerTrail.length>ghostsCollected)playerTrail.pop();
-        }
-        
         function handleCollisions(pX, pY) {
-            const bW = playerWidth * playerCollisionScale;
-            const bH = playerHeight * playerCollisionScale;
-            const bL = pX - bW / 2;
-            const bT = pY - bH / 2;
-
-            const shR = playerWidth * 1.5;
-            const shCX = pX;
-            const shCY = pY - playerHeight * 0.4;
-
-            const shieldWasActiveAtStart = shieldLevel > 0;
-
+            const bW = playerWidth * playerCollisionScale, bH = playerHeight * playerCollisionScale, bL = pX - bW / 2, bT = pY - bH / 2, shR = playerWidth * 1.5, shCX = pX, shCY = pY - playerHeight * 0.4;
+            const shieldStart = shieldLevel > 0;
             for (let i = mapObjects.length - 1; i >= 0; i--) {
                 const o = mapObjects[i];
-                if (o.collected || o.type === 'ENEMY') continue; 
-
+                if (o.collected || o.type === 'ENEMY') continue;
                 if (checkAABB(bL, bT, bW, bH, o.x, o.y, o.w, o.h)) {
-                    if (o.type === 'FRIEND' || o.type === 'FLEEING_SOUL') {
-                        o.collected = true;
-                        ghostsCollected++;
-                    } else if (o.type === 'SHIELD') {
-                        o.collected = true;
-                        if (shieldLevel < 2) shieldLevel++;
-                    } else if (o.type === 'KEEPER' && ghostsCollected > 0) {
-                        savedSouls += ghostsCollected;
-                        ghostsCollected = 0;
-                        playerTrail = [];
-                    } else if (o.type === 'DOOR' && savedSouls >= 1) {
-                        switchGameMode('dungeon');
-                        return; 
-                    } else if (o.type === 'PORTAL') {
-                        switchGameMode('graveyard');
-                        return;
-                    }
+                    if (o.type === 'FRIEND' || o.type === 'FLEEING_SOUL') { o.collected = true; ghostsCollected++; }
+                    else if (o.type === 'SHIELD') { o.collected = true; if (shieldLevel < 2) shieldLevel++; }
+                    else if (o.type === 'KEEPER' && ghostsCollected > 0) { savedSouls += ghostsCollected; ghostsCollected = 0; playerTrail = []; }
+                    else if (o.type === 'DOOR' && savedSouls >= 1) { switchGameMode('dungeon'); return; }
+                    else if (o.type === 'PARADISE_DOOR' && savedSouls >= 2) { switchGameMode('paradise'); return; }
+                    else if (o.type === 'PORTAL') { switchGameMode('graveyard'); return; }
+                    else if (o.type === 'PARADISE_PORTAL') { switchGameMode('dungeon'); return; }
                 }
             }
-            
-            if (shieldWasActiveAtStart) {
-                for (const enemy of mapObjects) {
-                    if (enemy.collected || enemy.type !== 'ENEMY') continue;
-
-                    const cX = Math.max(enemy.x, Math.min(shCX, enemy.x + enemy.w));
-                    const cY = Math.max(enemy.y, Math.min(shCY, enemy.y + enemy.h));
-                    const dX = shCX - cX;
-                    const dY = shCY - cY;
-                    
-                    if ((dX * dX) + (dY * dY) < (shR * shR)) {
-                        if (shieldLevel === 2) { 
-                            enemy.type = 'FRIEND';
-                            enemy.baseSpeed = 0;
-                            enemy.currentSpeed = 0;
-                        } else { 
-                            enemy.collected = true;
-                        }
+            if (shieldStart) {
+                for (const e of mapObjects) {
+                    if (e.collected || e.type !== 'ENEMY') continue;
+                    const cX = Math.max(e.x, Math.min(shCX, e.x + e.w)), cY = Math.max(e.y, Math.min(shCY, e.y + e.h)), dX = shCX - cX, dY = shCY - cY;
+                    if ((dX * dX) + (dY * dY) < shR * shR) {
+                        if (shieldLevel === 2) { e.type = 'FRIEND'; e.baseSpeed = 0; e.currentSpeed = 0; } else { e.collected = true; }
                         shieldLevel = 0;
-                        return; 
-                    }
-                }
-            }
-
-            if (!shieldWasActiveAtStart) {
-                for (const enemy of mapObjects) {
-                    if (enemy.collected || enemy.type !== 'ENEMY') continue;
-
-                    if (checkAABB(bL, bT, bW, bH, enemy.x, enemy.y, enemy.w, enemy.h)) {
-                        gameState = 'gameOver';
-                        if (typeof Tone !== 'undefined' && Tone.Transport.state === 'started') Tone.Transport.stop();
                         return;
                     }
-
+                }
+            }
+            if (!shieldStart) {
+                for (const e of mapObjects) {
+                    if (e.collected || e.type !== 'ENEMY') continue;
+                    if (checkAABB(bL, bT, bW, bH, e.x, e.y, e.w, e.h)) { gameState = 'gameOver'; if (typeof Tone !== 'undefined' && Tone.Transport.state === 'started') Tone.Transport.stop(); return; }
                     const sS = playerWidth * 0.7;
-                    for (const seg of playerTrail) {
-                        if (checkAABB(enemy.x, enemy.y, enemy.w, enemy.h, seg.x - sS / 2, seg.y - sS / 2, sS, sS)) {
-                            gameState = 'gameOver';
-                            if (typeof Tone !== 'undefined' && Tone.Transport.state === 'started') Tone.Transport.stop();
-                            return;
-                        }
-                    }
+                    for (const seg of playerTrail) { if (checkAABB(e.x, e.y, e.w, e.h, seg.x - sS / 2, seg.y - sS / 2, sS, sS)) { gameState = 'gameOver'; if (typeof Tone !== 'undefined' && Tone.Transport.state === 'started') Tone.Transport.stop(); return; } }
                 }
             }
         }
+
+        function updateWorldMovement() { if (gameState !== 'running') return; const cS = playerSpeed; let dX = 0, dY = 0, dDir = playerDirection; frameCount++; gameTime = Math.floor(frameCount / FPS); if (isMovingForward) { dY += cS; dDir = 'forward'; } if (isMovingBackward) { dY -= cS; dDir = 'backward'; } if (isMovingLeft) { dX += cS; dDir = 'left'; } if (isMovingRight) { dX -= cS; dDir = 'right'; } if (dX !== 0 || dY !== 0) playerDirection = dDir; let pX = -(worldX + dX), pY = -(worldY + dY); const hW = playerWidth / 2, hH = playerHeight / 2; pX = Math.max(hW, Math.min(MAP_PIXEL_WIDTH - hW, pX)); pY = Math.max(hH, Math.min(MAP_PIXEL_HEIGHT - hH, pY)); let cWX = -pX, cWY = -pY; if (!checkCollision(cWX, cWY)) { worldX = cWX; worldY = cWY; } else { let pXO = -(worldX + dX); pXO = Math.max(hW, Math.min(MAP_PIXEL_WIDTH - hW, pXO)); let cWXO = -pXO; if (dX !== 0 && !checkCollision(cWXO, worldY)) worldX = cWXO; let pYO = -(worldY + dY); pYO = Math.max(hH, Math.min(MAP_PIXEL_HEIGHT - hH, pYO)); let cWYO = -pYO; if (dY !== 0 && !checkCollision(worldX, cWYO)) worldY = cWYO; } }
+        function update() { if (gameState !== 'running') return; const pO = canvas.height * PLAYER_Y_OFFSET_RATIO, pXp = -worldX, pYp = -worldY + pO; updateWorldMovement(); const pX = -worldX, pY = -worldY + pO; updatePlayerTrail(pXp, pYp); updateMistParticles(); updateEnemies(pX, pY); updateFleeingSouls(pX, pY); handleCollisions(pX, pY); updateHUD(); }
+        function updateHUD() { hudTime.innerText = `TIME: ${gameTime}s`; hudSaved.innerText = `SAVED: ${savedSouls}`; hudSouls.innerText = `SOULS: ${ghostsCollected}`; }
+
+        function drawPlayer(x, y, pW, pH, c) {
+            ctx.save();
+            const gW = pW * 1.5, gH = pH * 0.9, dX = x - gW / 2, dY = y - gH;
+            ctx.shadowColor = c;
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = 'rgba(100,100,100,0.4)';
+            ctx.beginPath();
+            ctx.ellipse(x, y + pW * 0.2, pW * 0.8, pW * 0.2, 0, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.fillStyle = c;
+            ctx.globalAlpha = 0.8;
+            const hR = gW / 2;
+            ctx.beginPath();
+            ctx.arc(x, dY + hR, hR, Math.PI, 0);
+            ctx.lineTo(dX + gW, dY + gH);
+            ctx.lineTo(dX + gW * 0.75, dY + gH - 5);
+            ctx.lineTo(dX + gW * 0.5, dY + gH);
+            ctx.lineTo(dX + gW * 0.25, dY + gH - 5);
+            ctx.lineTo(dX, dY + gH);
+            ctx.closePath();
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            const eyeColor = gameMode === 'dungeon' ? C_DUNGEON_BG : C_BG_VERY_DARK;
+            ctx.fillStyle = eyeColor;
+            const eS = 2, lEX = x - hR / 2 - eS / 2, rEX = x + hR / 2 - eS / 2, eY = dY + hR * 0.7;
+            if (playerDirection === 'backward') {
+                ctx.fillRect(lEX, eY, eS, eS);
+                ctx.fillRect(rEX, eY, eS, eS);
+            } else if (playerDirection === 'left') {
+                ctx.fillRect(lEX, eY, eS, eS);
+            } else if (playerDirection === 'right') {
+                ctx.fillRect(rEX, eY, eS, eS);
+            }
+            ctx.shadowBlur = 0;
+            ctx.shadowColor = 'transparent';
+            ctx.restore();
+        }
+
+        function drawFriend(x, y, w, h) { const c = gameMode === 'dungeon' ? C_DUNGEON_SOUL : gameMode === 'paradise' ? C_PARADISE_SOUL : C_FRIEND_SOUL; ctx.shadowColor = c; ctx.shadowBlur = 5; ctx.fillStyle = c; ctx.globalAlpha = 0.5; const r = w / 2; ctx.beginPath(); ctx.arc(x + r, y + r, r, 0, 2 * Math.PI); ctx.fill(); ctx.globalAlpha = 1; ctx.shadowBlur = 0; }
+        function drawFleeingSoul(x, y, w, h) { ctx.save(); ctx.shadowColor = C_FLEEING_SOUL; ctx.shadowBlur = 8; ctx.fillStyle = C_FLEEING_SOUL; ctx.globalAlpha = 0.8; ctx.beginPath(); ctx.moveTo(x + w / 2, y); ctx.lineTo(x + w, y + h / 2); ctx.lineTo(x + w / 2, y + h); ctx.lineTo(x, y + h / 2); ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1; ctx.shadowBlur = 0; ctx.restore(); }
+        function drawShield(x, y, w, h) { ctx.save(); ctx.shadowColor = C_SHIELD_COLOR; ctx.shadowBlur = 10; ctx.fillStyle = C_SHIELD_COLOR; ctx.globalAlpha = 0.9; ctx.beginPath(); let oR = w / 2, iR = w / 4, rot = Math.PI / 2 * 3, st = Math.PI / 5, cX = x + w / 2, cY = y + h / 2; ctx.moveTo(cX, cY - oR); for (let i = 0; i < 5; i++) { ctx.lineTo(cX + Math.cos(rot) * oR, cY + Math.sin(rot) * oR); rot += st; ctx.lineTo(cX + Math.cos(rot) * iR, cY + Math.sin(rot) * iR); rot += st; } ctx.closePath(); ctx.fill(); ctx.globalAlpha = 1; ctx.shadowBlur = 0; ctx.restore(); }
+        function drawEnemy(x, y, w, h) { ctx.shadowColor = C_ENEMY_COLOR; ctx.shadowBlur = 8; ctx.fillStyle = C_ENEMY_COLOR; const r = w / 2; ctx.beginPath(); ctx.arc(x + r, y + r, r, 0, 2 * Math.PI); ctx.fill(); ctx.fillStyle = C_BG_VERY_DARK; const eS = 3; ctx.fillRect(x + w * 0.2, y + h * 0.3, eS, eS); ctx.fillRect(x + w * 0.8 - eS, y + h * 0.3, eS, eS); ctx.fillRect(x + w * 0.3, y + h * 0.65, w * 0.4, 1); ctx.shadowBlur = 0; }
+        function drawCryptKeeper(x, y, w, h, pGC) { ctx.save(); ctx.shadowColor = pGC; ctx.shadowBlur = 10; ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.beginPath(); ctx.ellipse(x + w / 2, y + h, w / 2 * 1.2, 5, 0, 0, 2 * Math.PI); ctx.fill(); ctx.fillStyle = C_STONE_SHADE; ctx.fillRect(x, y + h * 0.3, w, h * 0.7); const hR = w / 2; ctx.beginPath(); ctx.arc(x + w / 2, y + h * 0.3, hR, Math.PI, 0); ctx.fill(); ctx.fillStyle = C_BG_VERY_DARK; ctx.fillRect(x + w * 0.2, y + h * 0.45, w * 0.6, h * 0.2); ctx.strokeStyle = pGC; ctx.lineWidth = 1; ctx.strokeRect(x, y + h * 0.3, w, h * 0.7); ctx.shadowBlur = 0; ctx.restore(); }
+        function drawObstacle(b, dX, dY, pGC) { ctx.save(); const isD = gameMode === 'dungeon', isP = gameMode === 'paradise'; if (b.type === 'CRYPT') { const d = 15; ctx.fillStyle = isD ? C_DUNGEON_STONE_SHADE : isP ? '#A0A0A0' : C_STONE_SHADE; ctx.fillRect(dX + b.w - d, dY, d, b.h); ctx.fillStyle = isD ? C_DUNGEON_STONE : isP ? C_PARADISE_STONE : C_STONE_PRIMARY; const sC = isD ? C_DUNGEON_STONE_HIGHLIGHT : isP ? '#FFFFFF' : C_STONE_PRIMARY; ctx.shadowColor = sC; ctx.shadowBlur = 10; ctx.fillRect(dX, dY, b.w - d, b.h); ctx.fillStyle = isD ? C_DUNGEON_STONE_HIGHLIGHT : isP ? '#FFFFFF' : C_STONE_HIGHLIGHT; ctx.fillRect(dX, dY - d, b.w, d); ctx.strokeStyle = isP ? sC : pGC; ctx.lineWidth = 1; ctx.strokeRect(dX, dY, b.w - d, b.h); } else if (b.type === 'STONE') { const d = 8, tR = b.w / 2; ctx.fillStyle = isD ? C_DUNGEON_STONE_SHADE : isP ? '#A0A0A0' : C_STONE_SHADE; ctx.fillRect(dX + b.w - d, dY + tR, d, b.h - tR); ctx.fillStyle = isD ? C_DUNGEON_STONE : isP ? C_PARADISE_STONE : C_STONE_PRIMARY; const sC = isD ? C_DUNGEON_STONE_HIGHLIGHT : isP ? '#FFFFFF' : C_STONE_PRIMARY; ctx.shadowColor = sC; ctx.shadowBlur = 8; ctx.fillRect(dX, dY + tR, b.w - d, b.h - tR); ctx.beginPath(); ctx.arc(dX + tR, dY + tR, tR, Math.PI, 0, false); ctx.fill(); ctx.strokeStyle = isP ? sC : pGC; ctx.lineWidth = 1; ctx.strokeRect(dX, dY + tR, b.w - d, b.h - tR); } ctx.shadowBlur = 0; ctx.restore(); }
+        function drawTree(x, y, w, h) { const isD = gameMode === 'dungeon', isP = gameMode === 'paradise'; if (isP) return; ctx.save(); const bX = x + w * 0.35, tH = h * 0.7, tW = w * 0.25; const c = isD ? C_DUNGEON_STONE_SHADE : C_STONE_SHADE; ctx.fillStyle = c; ctx.strokeStyle = c; ctx.shadowColor = playerColor; ctx.lineWidth = 1; ctx.fillRect(bX, y + h - tH, tW, tH); ctx.beginPath(); ctx.moveTo(bX + tW / 2, y + h - tH); ctx.lineTo(x + w * 0.1, y + h * 0.4); ctx.lineTo(x + w * 0.2, y + h * 0.2); ctx.moveTo(bX + tW / 2, y + h - tH); ctx.lineTo(x + w * 0.8, y + h * 0.45); ctx.lineTo(x + w * 0.9, y + h * 0.3); ctx.moveTo(bX + tW / 2, y + h - tH); ctx.lineTo(bX + tW / 2, y + h * 0.2); ctx.stroke(); ctx.shadowBlur = 5; ctx.strokeStyle = playerColor; ctx.lineWidth = 1; ctx.strokeRect(x + w * 0.2, y + h * 0.2, 1, 1); ctx.strokeRect(x + w * 0.9, y + h * 0.3, 1, 1); ctx.shadowBlur = 0; ctx.restore(); }
+        function drawBones(x, y, w, h) { if (gameMode === 'paradise') return; ctx.save(); ctx.fillStyle = gameMode === 'dungeon' ? C_DUNGEON_STONE_HIGHLIGHT : C_STONE_HIGHLIGHT; ctx.fillRect(x + w * 0.2, y, w * 0.6, 2); ctx.fillRect(x, y + h * 0.5, w * 0.8, 1); ctx.fillRect(x + w * 0.4, y + h * 0.2, 1, h * 0.8); ctx.restore(); }
+        function drawMound(x, y, w, h) { if (gameMode === 'paradise') return; ctx.save(); ctx.fillStyle = gameMode === 'dungeon' ? C_DUNGEON_BG : C_BG_VERY_DARK; ctx.beginPath(); ctx.ellipse(x + w / 2, y + h, w / 2, h, 0, 0, 2 * Math.PI); ctx.fill(); ctx.fillStyle = gameMode === 'dungeon' ? C_DUNGEON_STONE_SHADE : C_STONE_SHADE; ctx.beginPath(); ctx.ellipse(x + w / 2, y + h, w * 0.4, h * 0.8, 0, 0, 2 * Math.PI); ctx.fill(); ctx.restore(); }
+        function drawBlossomPile(obj, drawX, drawY) { const c = gameMode === 'dungeon' ? C_DUNGEON_SOUL : gameMode === 'paradise' ? `hsl(${frameCount % 360}, 100%, 75%)` : C_FRIEND_SOUL; ctx.save(); ctx.fillStyle = c; ctx.shadowColor = c; ctx.shadowBlur = 4; const pS = gameMode === 'paradise' ? 6 : 4; obj.pixelPositions.forEach(pos => { ctx.fillRect(drawX + pos.x, drawY + pos.y, pS, pS); }); ctx.shadowBlur = 0; ctx.restore(); }
+        function drawDungeonDoor(x, y, w, h) { ctx.save(); ctx.fillStyle = C_DUNGEON_STONE_SHADE; ctx.fillRect(x, y, w, h); ctx.fillStyle = '#222'; ctx.fillRect(x + 10, y + 10, w - 20, h - 20); if (savedSouls >= 1) { ctx.strokeStyle = C_DUNGEON_SOUL; ctx.shadowColor = C_DUNGEON_SOUL; ctx.shadowBlur = 15; ctx.lineWidth = 3; ctx.strokeRect(x, y, w, h); } ctx.restore(); }
+        function drawParadiseDoor(x, y, w, h) { ctx.save(); ctx.fillStyle = C_DUNGEON_STONE; ctx.fillRect(x, y, w, h); ctx.fillStyle = '#333'; ctx.fillRect(x + 10, y + 10, w - 20, h - 20); if (savedSouls >= 2) { const g = ctx.createLinearGradient(x, y, x, y + h); g.addColorStop(0, `hsl(${(frameCount * 2) % 360},100%,50%)`); g.addColorStop(1, `hsl(${(frameCount * 2 + 180) % 360},100%,50%)`); ctx.strokeStyle = g; ctx.shadowColor = `hsl(${(frameCount * 2) % 360},100%,50%)`; ctx.shadowBlur = 20; ctx.lineWidth = 4; ctx.strokeRect(x, y, w, h); } ctx.restore(); }
+        function drawReturnPortal(x, y, w, h) { ctx.save(); const cX = x + w / 2, cY = y + h / 2; const g = ctx.createRadialGradient(cX, cY, 5, cX, cY, w / 2); g.addColorStop(0, `rgba(170,0,255,${0.5 + Math.sin(frameCount * 0.1) * 0.3})`); g.addColorStop(1, 'rgba(170,0,255,0)'); ctx.fillStyle = g; ctx.shadowColor = C_SUPER_SHIELD_COLOR; ctx.shadowBlur = 20; ctx.beginPath(); ctx.arc(cX, cY, w / 2, 0, 2 * Math.PI); ctx.fill(); ctx.restore(); }
+
+        function drawCharacterSelectScreen() { ctx.fillStyle = C_GRASS_PRIMARY; ctx.shadowColor = C_GRASS_PRIMARY; ctx.shadowBlur = 20; ctx.font = '48px "VT323",monospace'; ctx.textAlign = 'center'; ctx.fillText('LAST GAME', canvas.width / 2, canvas.height * 0.25); ctx.font = '32px "VT323",monospace'; ctx.fillText('CHOOSE YOUR GHOST', canvas.width / 2, canvas.height * 0.38); ctx.shadowBlur = 0; characterOptions.forEach((o, i) => { drawPlayer(o.x, o.y, playerWidth, playerHeight, o.c); if (i === selectedCharacterIndex) { ctx.strokeStyle = o.c; ctx.shadowColor = o.c; ctx.shadowBlur = 15; ctx.lineWidth = 2; ctx.strokeRect(o.x - o.w / 2, o.y - o.h, o.w, o.h); ctx.shadowBlur = 0; } }); const bW = 200, bH = 50, bX = canvas.width / 2 - bW / 2, bY = canvas.height * 0.75; beginButtonRect = { x: bX, y: bY, w: bW, h: bH }; const canStart = selectedCharacterIndex > -1; ctx.fillStyle = canStart ? C_PLAYER_GREEN : C_STONE_SHADE; ctx.strokeStyle = canStart ? C_PLAYER_GREEN : C_STONE_SHADE; ctx.shadowColor = canStart ? C_PLAYER_GREEN : 'transparent'; ctx.shadowBlur = 15; ctx.fillRect(bX, bY, bW, bH); ctx.strokeRect(bX, bY, bW, bH); ctx.fillStyle = C_BG_VERY_DARK; ctx.shadowBlur = 0; ctx.font = '36px "VT323",monospace'; ctx.fillText('BEGIN GAME', canvas.width / 2, bY + bH / 2 + 12); }
+        function drawGameOverScreen() { ctx.fillStyle = 'rgba(0,0,0,0.7)'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.fillStyle = C_GRASS_PRIMARY; ctx.shadowColor = C_GRASS_PRIMARY; ctx.shadowBlur = 20; ctx.font = '48px "VT323",monospace'; ctx.textAlign = 'center'; ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 80); ctx.font = '36px "VT323",monospace'; ctx.fillText(`TIME SURVIVED: ${gameTime}s`, canvas.width / 2, canvas.height / 2); ctx.fillText(`TOTAL SAVED: ${savedSouls}`, canvas.width / 2, canvas.height / 2 + 50); ctx.fillText('CLICK TO CONTINUE', canvas.width / 2, canvas.height / 2 + 120); ctx.shadowBlur = 0; }
         
-        function updateCharacterSelect() {
-            if (numericGamePrice > 0.25) {
-                numericGamePrice -= 0.0001;
-            } else {
-                numericGamePrice = 10.00;
+        function drawMiniMap() {
+            const mW = mapCanvas.width, mH = mapCanvas.height, sX = mW / MAP_PIXEL_WIDTH, sY = mH / MAP_PIXEL_HEIGHT;
+            mapCtx.fillStyle = gameMode === 'dungeon' ? 'rgba(0,0,0,0.8)' : gameMode === 'paradise' ? 'rgba(229,229,229,0.8)' : 'rgba(17,5,21,0.8)';
+            mapCtx.fillRect(0, 0, mW, mH);
+            const pX = -worldX, pY = -worldY + (canvas.height * PLAYER_Y_OFFSET_RATIO), mPX = pX * sX, mPY = pY * sY;
+            mapCtx.fillStyle = playerColor;
+            mapCtx.shadowColor = playerColor;
+            mapCtx.shadowBlur = 4;
+            mapCtx.fillRect(mPX - 2, mPY - 2, 4, 4);
+            mapCtx.shadowBlur = 0;
+
+            if (gameMode === 'graveyard') {
+                const kX = cryptKeeper.x * sX, kY = cryptKeeper.y * sY;
+                mapCtx.fillStyle = '#FF66AA';
+                mapCtx.shadowColor = '#FF66AA';
+                mapCtx.shadowBlur = 4;
+                mapCtx.beginPath();
+                mapCtx.arc(kX, kY, 3, 0, 2 * Math.PI);
+                mapCtx.fill();
+                mapCtx.shadowBlur = 0;
+            } else if (gameMode === 'dungeon' && savedSouls >= 2) {
+                const doorX = paradiseDoor.x * sX;
+                const doorY = paradiseDoor.y * sY;
+                mapCtx.fillStyle = `hsl(${(frameCount * 2) % 360}, 100%, 50%)`;
+                mapCtx.shadowColor = `hsl(${(frameCount * 2) % 360}, 100%, 50%)`;
+                mapCtx.shadowBlur = 5;
+                mapCtx.fillRect(doorX - 2, doorY - 2, 4, 4); 
+                mapCtx.shadowBlur = 0;
             }
         }
-
-        function updateWorldMovement() {
-            if(gameState!=='running')return;const cSp=playerSpeed;let dX=0,dY=0;let domDir=playerDirection;frameCount++;gameTime=Math.floor(frameCount/FPS);if(isMovingForward){dY+=cSp;domDir='forward';}if(isMovingBackward){dY-=cSp;domDir='backward';}if(isMovingLeft){dX+=cSp;domDir='left';}if(isMovingRight){dX-=cSp;domDir='right';}if(dX!==0||dY!==0)playerDirection=domDir;let potMapX=-(worldX+dX),potMapY=-(worldY+dY);const hW=playerWidth/2,hH=playerHeight/2;potMapX=Math.max(hW,Math.min(MAP_PIXEL_WIDTH-hW,potMapX));potMapY=Math.max(hH,Math.min(MAP_PIXEL_HEIGHT-hH,potMapY));let cWX=-potMapX,cWY=-potMapY;if(!checkCollision(cWX,cWY)){worldX=cWX;worldY=cWY;}else{let pMXO=-(worldX+dX);pMXO=Math.max(hW,Math.min(MAP_PIXEL_WIDTH-hW,pMXO));let cWXO=-pMXO;if(dX!==0&&!checkCollision(cWXO,worldY))worldX=cWXO;let pMYO=-(worldY+dY);pMYO=Math.max(hH,Math.min(MAP_PIXEL_HEIGHT-hH,pMYO));let cWYO=-pMYO;if(dY!==0&&!checkCollision(worldX,cWYO))worldY=cWYO;}}
-
-        function update() {
-            if(gameState!=='running')return;const pYOff=canvas.height*PLAYER_Y_OFFSET_RATIO,pMapX_prev=-worldX,pMapY_prev=-worldY+pYOff;updateWorldMovement();const pMapX=-worldX,pMapY=-worldY+pYOff;updatePlayerTrail(pMapX_prev,pMapY_prev);updateMistParticles();updateEnemies(pMapX,pMapY);updateFleeingSouls(pMapX,pMapY);handleCollisions(pMapX,pMapY);updateHUD();
-        }
-        
-        function updateHUD() { hudTime.innerText=`TIME: ${gameTime}s`; hudSaved.innerText=`SAVED: ${savedSouls}`; hudSouls.innerText=`SOULS: ${ghostsCollected}`; }
-        
-        // --- DRAWING FUNCTIONS ---
-
-        function drawPlayer(x,y,pW,pH,c){ctx.save();const gW=pW*1.5,gH=pH*0.9,dX=x-gW/2,dY=y-gH;ctx.shadowColor=c;ctx.shadowBlur=10;ctx.fillStyle='rgba(100,100,100,0.4)';ctx.beginPath();ctx.ellipse(x,y+pW*0.2,pW*0.8,pW*0.2,0,0,2*Math.PI);ctx.fill();ctx.fillStyle=c;ctx.globalAlpha=0.8;const hR=gW/2;ctx.beginPath();ctx.arc(x,dY+hR,hR,Math.PI,0);ctx.lineTo(dX+gW,dY+gH);ctx.lineTo(dX+gW*0.75,dY+gH-5);ctx.lineTo(dX+gW*0.5,dY+gH);ctx.lineTo(dX+gW*0.25,dY+gH-5);ctx.lineTo(dX,dY+gH);ctx.closePath();ctx.fill();ctx.globalAlpha=1;ctx.fillStyle=C_BG_VERY_DARK;const eS=2,lEX=x-hR/2-eS/2,rEX=x+hR/2-eS/2,eY=dY+hR*0.7;if(playerDirection==='backward'){ctx.fillRect(lEX,eY,eS,eS);ctx.fillRect(rEX,eY,eS,eS);}else if(playerDirection==='left')ctx.fillRect(lEX,eY,eS,eS);else if(playerDirection==='right')ctx.fillRect(rEX,eY,eS,eS);ctx.shadowBlur=0;ctx.shadowColor='transparent';ctx.restore();}
-        function drawFriend(x,y,w,h){const c=gameMode==='dungeon'?C_DUNGEON_SOUL:C_FRIEND_SOUL;ctx.shadowColor=c;ctx.shadowBlur=5;ctx.fillStyle=c;ctx.globalAlpha=0.5;const r=w/2;ctx.beginPath();ctx.arc(x+r,y+r,r,0,2*Math.PI);ctx.fill();ctx.globalAlpha=1;ctx.shadowBlur=0;}
-        function drawFleeingSoul(x,y,w,h){ctx.save();ctx.shadowColor=C_FLEEING_SOUL;ctx.shadowBlur=8;ctx.fillStyle=C_FLEEING_SOUL;ctx.globalAlpha=0.8;ctx.beginPath();ctx.moveTo(x+w/2,y);ctx.lineTo(x+w,y+h/2);ctx.lineTo(x+w/2,y+h);ctx.lineTo(x,y+h/2);ctx.closePath();ctx.fill();ctx.globalAlpha=1;ctx.shadowBlur=0;ctx.restore();}
-        function drawShield(x,y,w,h){ctx.save();ctx.shadowColor=C_SHIELD_COLOR;ctx.shadowBlur=10;ctx.fillStyle=C_SHIELD_COLOR;ctx.globalAlpha=0.9;ctx.beginPath();let oR=w/2,iR=w/4,rot=Math.PI/2*3,st=Math.PI/5,cX=x+w/2,cY=y+h/2;ctx.moveTo(cX,cY-oR);for(let i=0;i<5;i++){ctx.lineTo(cX+Math.cos(rot)*oR,cY+Math.sin(rot)*oR);rot+=st;ctx.lineTo(cX+Math.cos(rot)*iR,cY+Math.sin(rot)*iR);rot+=st;}ctx.closePath();ctx.fill();ctx.globalAlpha=1;ctx.shadowBlur=0;ctx.restore();}
-        function drawEnemy(x,y,w,h){ctx.shadowColor=C_ENEMY_COLOR;ctx.shadowBlur=8;ctx.fillStyle=C_ENEMY_COLOR;const r=w/2;ctx.beginPath();ctx.arc(x+r,y+r,r,0,2*Math.PI);ctx.fill();ctx.fillStyle=C_BG_VERY_DARK;const eS=3;ctx.fillRect(x+w*0.2,y+h*0.3,eS,eS);ctx.fillRect(x+w*0.8-eS,y+h*0.3,eS,eS);ctx.fillRect(x+w*0.3,y+h*0.65,w*0.4,1);ctx.shadowBlur=0;}
-        function drawCryptKeeper(x,y,w,h,pGC){ctx.save();ctx.shadowColor=pGC;ctx.shadowBlur=10;ctx.fillStyle='rgba(0,0,0,0.6)';ctx.beginPath();ctx.ellipse(x+w/2,y+h,w/2*1.2,5,0,0,2*Math.PI);ctx.fill();ctx.fillStyle=C_STONE_SHADE;ctx.fillRect(x,y+h*0.3,w,h*0.7);const hR=w/2;ctx.beginPath();ctx.arc(x+w/2,y+h*0.3,hR,Math.PI,0);ctx.fill();ctx.fillStyle=C_BG_VERY_DARK;ctx.fillRect(x+w*0.2,y+h*0.45,w*0.6,h*0.2);ctx.strokeStyle=pGC;ctx.lineWidth=1;ctx.strokeRect(x,y+h*0.3,w,h*0.7);ctx.shadowBlur=0;ctx.restore();}
-        function drawObstacle(b,dX,dY,pGC){ctx.save();if(b.type==='CRYPT'){const d=15;ctx.fillStyle=gameMode==='dungeon'?C_DUNGEON_STONE_SHADE:C_STONE_SHADE;ctx.fillRect(dX+b.w-d,dY,d,b.h);ctx.fillStyle=gameMode==='dungeon'?C_DUNGEON_STONE:C_STONE_PRIMARY;ctx.shadowColor=gameMode==='dungeon'?C_DUNGEON_STONE_HIGHLIGHT:C_STONE_PRIMARY;ctx.shadowBlur=10;ctx.fillRect(dX,dY,b.w-d,b.h);ctx.fillStyle=gameMode==='dungeon'?C_DUNGEON_STONE_HIGHLIGHT:C_STONE_HIGHLIGHT;ctx.fillRect(dX,dY-d,b.w,d);ctx.strokeStyle=pGC;ctx.lineWidth=1;ctx.strokeRect(dX,dY,b.w-d,b.h);}else if(b.type==='STONE'){const d=8,tR=b.w/2;ctx.fillStyle=gameMode==='dungeon'?C_DUNGEON_STONE_SHADE:C_STONE_SHADE;ctx.fillRect(dX+b.w-d,dY+tR,d,b.h-tR);ctx.fillStyle=gameMode==='dungeon'?C_DUNGEON_STONE:C_STONE_PRIMARY;ctx.shadowColor=gameMode==='dungeon'?C_DUNGEON_STONE_HIGHLIGHT:C_STONE_PRIMARY;ctx.shadowBlur=8;ctx.fillRect(dX,dY+tR,b.w-d,b.h-tR);ctx.beginPath();ctx.arc(dX+tR,dY+tR,tR,Math.PI,0,false);ctx.fill();ctx.strokeStyle=pGC;ctx.lineWidth=1;ctx.strokeRect(dX,dY+tR,b.w-d,b.h-tR);}ctx.shadowBlur=0;ctx.restore();}
-        function drawTree(x,y,w,h){const dC=gameMode==='dungeon';ctx.save();const bX=x+w*0.35,tH=h*0.7,tW=w*0.25;ctx.fillStyle=dC?C_DUNGEON_STONE_SHADE:C_STONE_SHADE;ctx.strokeStyle=dC?C_DUNGEON_STONE_SHADE:C_STONE_SHADE;ctx.shadowColor=playerColor;ctx.lineWidth=1;ctx.fillRect(bX,y+h-tH,tW,tH);ctx.beginPath();ctx.moveTo(bX+tW/2,y+h-tH);ctx.lineTo(x+w*0.1,y+h*0.4);ctx.lineTo(x+w*0.2,y+h*0.2);ctx.moveTo(bX+tW/2,y+h-tH);ctx.lineTo(x+w*0.8,y+h*0.45);ctx.lineTo(x+w*0.9,y+h*0.3);ctx.moveTo(bX+tW/2,y+h-tH);ctx.lineTo(bX+tW/2,y+h*0.2);ctx.stroke();ctx.shadowBlur=5;ctx.strokeStyle=playerColor;ctx.lineWidth=1;ctx.strokeRect(x+w*0.2,y+h*0.2,1,1);ctx.strokeRect(x+w*0.9,y+h*0.3,1,1);ctx.shadowBlur=0;ctx.restore();}
-        function drawBones(x,y,w,h){ctx.save();ctx.fillStyle=gameMode==='dungeon'?C_DUNGEON_STONE_HIGHLIGHT:C_STONE_HIGHLIGHT;ctx.fillRect(x+w*0.2,y,w*0.6,2);ctx.fillRect(x,y+h*0.5,w*0.8,1);ctx.fillRect(x+w*0.4,y+h*0.2,1,h*0.8);ctx.restore();}
-        function drawMound(x,y,w,h){ctx.save();ctx.fillStyle=gameMode==='dungeon'?C_DUNGEON_BG:C_BG_VERY_DARK;ctx.beginPath();ctx.ellipse(x+w/2,y+h,w/2,h,0,0,2*Math.PI);ctx.fill();ctx.fillStyle=gameMode==='dungeon'?C_DUNGEON_STONE_SHADE:C_STONE_SHADE;ctx.beginPath();ctx.ellipse(x+w/2,y+h,w*0.4,h*0.8,0,0,2*Math.PI);ctx.fill();ctx.restore();}
-        function drawBlossomPile(x,y,w,h){const c=gameMode==='dungeon'?C_DUNGEON_SOUL:C_FRIEND_SOUL;ctx.save();ctx.fillStyle=c;ctx.shadowColor=c;ctx.shadowBlur=4;const pS=4;ctx.fillRect(x+w*0.2,y+h*0.4,pS,pS);ctx.fillRect(x+w*0.4,y+h*0.2,pS,pS);ctx.fillRect(x+w*0.6,y+h*0.5,pS,pS);ctx.fillRect(x+w*0.1,y+h*0.7,pS,pS);ctx.fillRect(x+w*0.8,y+h*0.3,pS,pS);ctx.fillRect(x+w*0.5,y+h*0.8,pS,pS);ctx.shadowBlur=0;ctx.restore();}
-        function drawDungeonDoor(x,y,w,h){ctx.save();ctx.fillStyle=gameMode==='dungeon'?C_DUNGEON_STONE_SHADE:C_STONE_SHADE;ctx.fillRect(x,y,w,h);ctx.fillStyle=gameMode==='dungeon'?'#111':'#222';ctx.fillRect(x+10,y+10,w-20,h-20);if(savedSouls>=1){ctx.strokeStyle=C_DUNGEON_SOUL;ctx.shadowColor=C_DUNGEON_SOUL;ctx.shadowBlur=15;ctx.lineWidth=3;ctx.strokeRect(x,y,w,h);}ctx.restore();}
-        function drawReturnPortal(x,y,w,h){ctx.save();const cX=x+w/2,cY=y+h/2;const grad=ctx.createRadialGradient(cX,cY,5,cX,cY,w/2);grad.addColorStop(0,`rgba(170,0,255,${0.5+Math.sin(frameCount*0.1)*0.3})`);grad.addColorStop(1,'rgba(170,0,255,0)');ctx.fillStyle=grad;ctx.shadowColor=C_SUPER_SHIELD_COLOR;ctx.shadowBlur=20;ctx.beginPath();ctx.arc(cX,cY,w/2,0,2*Math.PI);ctx.fill();ctx.restore();}
-        
-        function drawCharacterSelectScreen() {
-            ctx.fillStyle = C_GRASS_PRIMARY;
-            ctx.shadowColor = C_GRASS_PRIMARY;
-            ctx.shadowBlur = 20;
-            ctx.font = '48px "VT323", monospace';
-            ctx.textAlign = 'center';
-            ctx.fillText('LAST GAME', canvas.width / 2, canvas.height * 0.15);
-            ctx.font = '32px "VT323", monospace';
-            ctx.fillText('CHOOSE YOUR GHOST', canvas.width / 2, canvas.height * 0.25);
-            ctx.shadowBlur = 0;
-
-            characterOptions.forEach((opt, i) => {
-                drawPlayer(opt.x, opt.y, playerWidth, playerHeight, opt.c);
-                if (i === selectedCharacterIndex) {
-                    ctx.strokeStyle = opt.c;
-                    ctx.shadowColor = opt.c;
-                    ctx.shadowBlur = 15;
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(opt.x - opt.w/2, opt.y - opt.h, opt.w, opt.h);
-                    ctx.shadowBlur = 0;
-                }
-            });
-
-            const btnW = 200, btnH = 50;
-            const btnX = canvas.width / 2 - btnW / 2;
-            const btnY = canvas.height * 0.55;
-            beginButtonRect = { x: btnX, y: btnY, w: btnW, h: btnH };
-
-            const canStart = selectedCharacterIndex > -1;
-            ctx.fillStyle = canStart ? C_PLAYER_GREEN : C_STONE_SHADE;
-            ctx.strokeStyle = canStart ? C_PLAYER_GREEN : C_STONE_SHADE;
-            ctx.shadowColor = canStart ? C_PLAYER_GREEN : 'transparent';
-            ctx.shadowBlur = 15;
-            ctx.fillRect(btnX, btnY, btnW, btnH);
-            ctx.strokeRect(btnX, btnY, btnW, btnH);
-
-            ctx.fillStyle = C_BG_VERY_DARK;
-            ctx.shadowBlur = 0;
-            ctx.font = '36px "VT323", monospace';
-            ctx.fillText('BEGIN GAME', canvas.width / 2, btnY + btnH / 2 + 12);
-            
-            ctx.fillStyle = C_GRASS_PRIMARY;
-            ctx.font = '16px "VT323", monospace';
-            const instructionY = canvas.height * 0.75;
-            ctx.fillText("Pay Game Price to play.", canvas.width / 2, instructionY);
-            ctx.fillText("Earn $time token until someone else plays.", canvas.width / 2, instructionY + 18);
-            ctx.fillText("90% of the Game Price is paid out to previous player.", canvas.width / 2, instructionY + 36);
-
-            ctx.fillStyle = C_GRASS_PRIMARY;
-            ctx.font = '24px "VT323", monospace';
-            ctx.fillText(`GAME PRICE: $${numericGamePrice.toFixed(4)}`, canvas.width / 2, canvas.height * 0.95);
-        }
-
-        function drawGameOverScreen(){ctx.fillStyle='rgba(0,0,0,0.7)';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.fillStyle=C_GRASS_PRIMARY;ctx.shadowColor=C_GRASS_PRIMARY;ctx.shadowBlur=20;ctx.font='48px "VT323",monospace';ctx.textAlign='center';ctx.fillText('GAME OVER',canvas.width/2,canvas.height/2-80);ctx.font='36px "VT323",monospace';ctx.fillText(`TIME SURVIVED: ${gameTime}s`,canvas.width/2,canvas.height/2);ctx.fillText(`TOTAL SAVED: ${savedSouls}`,canvas.width/2,canvas.height/2+50);ctx.fillText('CLICK TO CONTINUE',canvas.width/2,canvas.height/2+120);ctx.shadowBlur=0;}
-        function drawMiniMap(){const mW=mapCanvas.width,mH=mapCanvas.height,sX=mW/MAP_PIXEL_WIDTH,sY=mH/MAP_PIXEL_HEIGHT;mapCtx.fillStyle=gameMode==='dungeon'?'rgba(0,0,0,0.8)':'rgba(17,5,21,0.8)';mapCtx.fillRect(0,0,mW,mH);const pX=-worldX,pY=-worldY+(canvas.height*PLAYER_Y_OFFSET_RATIO),mPX=pX*sX,mPY=pY*sY;mapCtx.fillStyle=playerColor;mapCtx.shadowColor=playerColor;mapCtx.shadowBlur=4;mapCtx.fillRect(mPX-2,mPY-2,4,4);mapCtx.shadowBlur=0;const kX=cryptKeeper.x*sX,kY=cryptKeeper.y*sY;mapCtx.fillStyle='#FF66AA';mapCtx.shadowColor='#FF66AA';mapCtx.shadowBlur=4;mapCtx.beginPath();mapCtx.arc(kX,kY,3,0,2*Math.PI);mapCtx.fill();mapCtx.shadowBlur=0;}
 
         function draw() {
-            // FIX: Control visibility of UI elements to keep layout consistent across all screens.
-            const showGameplayUI = gameState === 'running' || gameState === 'gameOver';
-            mapContainer.style.visibility = showGameplayUI ? 'visible' : 'hidden';
-            statsContainer.style.visibility = showGameplayUI ? 'visible' : 'hidden';
-            muteBtn.style.display = gameState !== 'characterSelect' ? 'block' : 'none';
+            gameContainer.className = `game-container state-${gameState}`;
 
-            ctx.fillStyle = gameMode === 'dungeon' ? C_DUNGEON_BG : C_BG_VERY_DARK; 
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-            if (gameState === 'characterSelect') {
-                drawCharacterSelectScreen();
-                return;
+            if (gameMode === 'paradise') {
+                const g = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+                const hue = (frameCount * 0.5) % 360;
+                g.addColorStop(0, `hsl(${hue},100%,80%)`);
+                g.addColorStop(1, `hsl(${(hue + 120) % 360},100%,80%)`);
+                ctx.fillStyle = g;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            } else {
+                ctx.fillStyle = gameMode === 'dungeon' ? C_DUNGEON_BG : C_BG_VERY_DARK;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const playerX = centerX;
-            const playerYScreen = centerY + canvas.height * PLAYER_Y_OFFSET_RATIO;
-            const playerFeetY = playerYScreen + playerHeight * 0.7 / 2; 
+            if (gameState === 'characterSelect') { drawCharacterSelectScreen(); return; }
 
-            ctx.fillStyle = gameMode === 'dungeon' ? C_DUNGEON_GROUND : C_GRASS_PRIMARY;
-            ctx.fillRect(worldX + centerX, worldY + centerY, MAP_PIXEL_WIDTH, MAP_PIXEL_HEIGHT);
-            
-            ctx.fillStyle = gameMode === 'dungeon' ? C_DUNGEON_GRIT : C_GRASS_SHADE;
-            groundTexture.forEach(p => { let dX = p.x + worldX + centerX, dY = p.y + worldY + centerY; if (dX+TEXTURE_SIZE > 0 && dX < canvas.width && dY+TEXTURE_SIZE > 0 && dY < canvas.height) ctx.fillRect(Math.floor(dX), Math.floor(dY), TEXTURE_SIZE, TEXTURE_SIZE); });
+            const cX = canvas.width / 2, cY = canvas.height / 2, pX = cX, pYS = cY + canvas.height * PLAYER_Y_OFFSET_RATIO, pFY = pYS + playerHeight * 0.7 / 2;
+
+            if (gameMode !== 'paradise') {
+                ctx.fillStyle = gameMode === 'dungeon' ? C_DUNGEON_GROUND : C_GRASS_PRIMARY;
+                ctx.fillRect(worldX + cX, worldY + cY, MAP_PIXEL_WIDTH, MAP_PIXEL_HEIGHT);
+            }
+
+            ctx.fillStyle = gameMode === 'dungeon' ? C_DUNGEON_GRIT : gameMode === 'paradise' ? C_PARADISE_GRIT : C_GRASS_SHADE;
+            groundTexture.forEach(p => { let dX = p.x + worldX + cX, dY = p.y + worldY + cY; if (dX + TEXTURE_SIZE > 0 && dX < canvas.width && dY + TEXTURE_SIZE > 0 && dY < canvas.height) ctx.fillRect(Math.floor(dX), Math.floor(dY), TEXTURE_SIZE, TEXTURE_SIZE); });
 
             let drawables = [];
-            mapObjects.forEach(o => { if (o.collected && o.type !== 'ENEMY') return; let dX = o.x + worldX + centerX, dY = o.y + worldY + centerY; if (dX + o.w > 0 && dX < canvas.width && dY + o.h > 0 && dY < canvas.height) drawables.push({ type: o.type, obj: o, drawX: dX, drawY: dY, sortY: dY + o.h }); });
-            drawables.push({ type: 'player', drawX: playerX, drawY: playerYScreen, sortY: playerFeetY });
+            mapObjects.forEach(o => { if (o.collected && o.type !== 'ENEMY') return; let dX = o.x + worldX + cX, dY = o.y + worldY + cY; if (dX + o.w > 0 && dX < canvas.width && dY + o.h > 0 && dY < canvas.height) drawables.push({ type: o.type, obj: o, drawX: dX, drawY: dY, sortY: dY + o.h }); });
+            drawables.push({ type: 'player', drawX: pX, drawY: pYS, sortY: pFY });
             drawables.sort((a, b) => a.sortY - b.sortY);
 
             drawables.forEach(item => {
-                switch(item.type) {
+                switch (item.type) {
                     case 'CRYPT': case 'STONE': drawObstacle(item.obj, item.drawX, item.drawY, playerColor); break;
                     case 'TREE': drawTree(item.drawX, item.drawY, item.obj.w, item.obj.h); break;
                     case 'BONES': drawBones(item.drawX, item.drawY, item.obj.w, item.obj.h); break;
                     case 'MOUND': drawMound(item.drawX, item.drawY, item.obj.w, item.obj.h); break;
-                    case 'BLOSSOM': drawBlossomPile(item.drawX, item.drawY, item.obj.w, item.obj.h); break;
+                    case 'BLOSSOM': drawBlossomPile(item.obj, item.drawX, item.drawY); break;
                     case 'FRIEND': drawFriend(item.drawX, item.drawY, item.obj.w, item.obj.h); break;
                     case 'FLEEING_SOUL': drawFleeingSoul(item.drawX, item.drawY, item.obj.w, item.obj.h); break;
                     case 'SHIELD': drawShield(item.drawX, item.drawY, item.obj.w, item.obj.h); break;
                     case 'ENEMY': drawEnemy(item.drawX, item.drawY, item.obj.w, item.obj.h); break;
                     case 'KEEPER': drawCryptKeeper(item.drawX, item.drawY, item.obj.w, item.obj.h, playerColor); break;
                     case 'DOOR': drawDungeonDoor(item.drawX, item.drawY, item.obj.w, item.obj.h); break;
+                    case 'PARADISE_DOOR': drawParadiseDoor(item.drawX, item.drawY, item.obj.w, item.obj.h); break;
                     case 'PORTAL': drawReturnPortal(item.drawX, item.drawY, item.obj.w, item.obj.h); break;
+                    case 'PARADISE_PORTAL': drawReturnPortal(item.drawX, item.drawY, item.obj.w, item.obj.h); break;
                     case 'player':
                         if (shieldLevel > 0) {
-                            ctx.save(); let sR1, sR2, aC, bA, alpha;
-                            if (shieldLevel === 2) { aC=C_SUPER_SHIELD_COLOR;sR1=playerWidth*2;sR2=playerWidth*1.5;bA=25;alpha=0.5+(Math.sin(frameCount*0.25)*0.2); } 
-                            else { aC=C_SHIELD_COLOR;sR1=playerWidth*1.5;sR2=0;bA=15;alpha=0.3+(Math.sin(frameCount*0.1)*0.1); }
-                            ctx.strokeStyle=aC;ctx.fillStyle=aC;ctx.shadowColor=aC;ctx.shadowBlur=bA;
-                            const pO1=Math.sin(frameCount*0.1)*2, pO2=Math.cos(frameCount*0.15)*2;
-                            ctx.globalAlpha=alpha;ctx.beginPath();ctx.arc(item.drawX,item.drawY-playerHeight*0.4,sR1+pO1,0,2*Math.PI);ctx.stroke();
-                            if (shieldLevel===2){ctx.globalAlpha=alpha*0.7;ctx.beginPath();ctx.arc(item.drawX,item.drawY-playerHeight*0.4,sR2+pO2,0,2*Math.PI);ctx.stroke();}
-                            ctx.globalAlpha=alpha*0.3; ctx.fill(); ctx.restore();
+                            ctx.save();
+                            let sR1, sR2, aC, bA, alpha;
+                            if (shieldLevel === 2) { aC = C_SUPER_SHIELD_COLOR; sR1 = playerWidth * 2; sR2 = playerWidth * 1.5; bA = 25; alpha = 0.5 + Math.sin(frameCount * 0.25) * 0.2; }
+                            else { aC = C_SHIELD_COLOR; sR1 = playerWidth * 1.5; sR2 = 0; bA = 15; alpha = 0.3 + Math.sin(frameCount * 0.1) * 0.1; }
+                            ctx.strokeStyle = aC; ctx.fillStyle = aC; ctx.shadowColor = aC; ctx.shadowBlur = bA;
+                            const pO1 = Math.sin(frameCount * 0.1) * 2, pO2 = Math.cos(frameCount * 0.15) * 2;
+                            ctx.globalAlpha = alpha; ctx.beginPath(); ctx.arc(item.drawX, item.drawY - playerHeight * 0.4, sR1 + pO1, 0, 2 * Math.PI); ctx.stroke();
+                            if (shieldLevel === 2) { ctx.globalAlpha = alpha * 0.7; ctx.beginPath(); ctx.arc(item.drawX, item.drawY - playerHeight * 0.4, sR2 + pO2, 0, 2 * Math.PI); ctx.stroke(); }
+                            ctx.globalAlpha = alpha * 0.3; ctx.fill(); ctx.restore();
                         }
-                        ctx.fillStyle=playerColor;ctx.shadowColor=playerColor;
-                        playerTrail.forEach((seg,idx)=>{let dX=seg.x+worldX+centerX,dY=seg.y+worldY+centerY;const bA=0.7,sR=1-(idx/(ghostsCollected+2));ctx.globalAlpha=bA*sR;ctx.shadowBlur=8*sR;const sS=(playerWidth*0.7)*sR;if(sS>1){ctx.beginPath();ctx.arc(dX,dY-sS*0.2,sS/2,0,2*Math.PI);ctx.fill();}});
-                        ctx.globalAlpha=1;ctx.shadowBlur=0;
+                        ctx.fillStyle = playerColor; ctx.shadowColor = playerColor;
+                        playerTrail.forEach((seg, idx) => { let dX = seg.x + worldX + cX, dY = seg.y + worldY + cY; const bA = 0.7, sR = 1 - idx / (ghostsCollected + 2); ctx.globalAlpha = bA * sR; ctx.shadowBlur = 8 * sR; const sS = playerWidth * 0.7 * sR; if (sS > 1) { ctx.beginPath(); ctx.arc(dX, dY - sS * 0.2, sS / 2, 0, 2 * Math.PI); ctx.fill(); } });
+                        ctx.globalAlpha = 1; ctx.shadowBlur = 0;
                         drawPlayer(item.drawX, item.drawY, playerWidth, playerHeight, playerColor);
                         break;
                 }
             });
 
-            ctx.fillStyle=C_FRIEND_SOUL; ctx.shadowColor=C_FRIEND_SOUL; ctx.shadowBlur=5; 
-            mistParticles.forEach(m=>{ctx.beginPath();ctx.fillRect(m.x,m.y,m.s,m.s);ctx.closePath();});
-            ctx.shadowBlur=0;
-
-            if(gameState==='gameOver') drawGameOverScreen();
-            if(gameState==='running') drawMiniMap();
+            const mistC = gameMode === 'paradise' ? `hsl(${(frameCount + 180) % 360}, 100%, 85%)` : C_FRIEND_SOUL;
+            ctx.fillStyle = mistC; ctx.shadowColor = mistC; ctx.shadowBlur = 5;
+            mistParticles.forEach(m => { ctx.beginPath(); ctx.fillRect(m.x, m.y, m.s, m.s); ctx.closePath(); });
+            ctx.shadowBlur = 0;
+            if (gameState === 'gameOver') drawGameOverScreen();
+            if (gameState === 'running') drawMiniMap();
         }
 
-        function gameLoop() { 
+        function gameLoop() {
             if (gameState === 'running') {
                 update();
-            } else if (gameState === 'characterSelect') {
-                updateCharacterSelect();
             }
             draw();
             requestAnimationFrame(gameLoop);
         }
 
         function startGame() {
-            worldX = -(cryptKeeper.x - 100); 
+            worldX = -(cryptKeeper.x - 100);
             worldY = -(cryptKeeper.y);
-            isMovingForward=false; isMovingBackward=false; isMovingLeft=false; isMovingRight=false; 
-            playerDirection='forward'; ghostsCollected=0; 
-            
-            frameCount=0; gameTime=0; playerTrail=[]; shieldLevel=0;
-            
-            initCityMap(); initMistParticles(); 
-            if (typeof Tone !== 'undefined') { if (Tone.context.state !== 'running') Tone.start(); setupMusic(); Tone.Destination.mute = isMuted; }
+            isMovingForward = false;
+            isMovingBackward = false;
+            isMovingLeft = false;
+            isMovingRight = false;
+            playerDirection = 'forward';
+            ghostsCollected = 0;
+            frameCount = 0;
+            gameTime = 0;
+            playerTrail = [];
+            shieldLevel = 0;
+            initCityMap();
+            initMistParticles();
+            if (typeof Tone !== 'undefined') {
+                if (Tone.context.state !== 'running') Tone.start();
+                setupMusic();
+                Tone.Destination.mute = isMuted;
+            }
         }
 
-        // --- Touchpad Logic ---
-        let isTouching=false; function handleMove(e){e.preventDefault();if(gameState!=='running'||!isTouching)return;const r=touchPad.getBoundingClientRect(),cX=e.touches?e.touches[0].clientX:e.clientX,cY=e.touches?e.touches[0].clientY:e.clientY,tX=cX-r.left-r.width/2,tY=cY-r.top-r.height/2,dZ=15;isMovingForward=tY<-dZ;isMovingBackward=tY>dZ;isMovingLeft=tX<-dZ;isMovingRight=tX>dZ;} function handleStart(e){e.preventDefault();if(gameState!=='running')return;isTouching=true;handleMove(e);} function handleEnd(e){e.preventDefault();isTouching=false;isMovingForward=isMovingBackward=isMovingLeft=isMovingRight=false;}
-        
-        function updateMuteButtonIcon() {
-            const speakerOnIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`;
-            const speakerOffIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`;
-            muteBtn.innerHTML = isMuted ? speakerOffIcon : speakerOnIcon;
-        }
+        let isTouching = false;
+        function handleMove(e) { e.preventDefault(); if (gameState !== 'running' || !isTouching) return; const r = touchPad.getBoundingClientRect(), cX = e.touches ? e.touches[0].clientX : e.clientX, cY = e.touches ? e.touches[0].clientY : e.clientY, tX = cX - r.left - r.width / 2, tY = cY - r.top - r.height / 2, dZ = 15; isMovingForward = tY < -dZ; isMovingBackward = tY > dZ; isMovingLeft = tX < -dZ; isMovingRight = tX > dZ; }
+        function handleStart(e) { e.preventDefault(); if (gameState !== 'running') return; isTouching = true; handleMove(e); }
+        function handleEnd(e) { e.preventDefault(); isTouching = false; isMovingForward = false; isMovingBackward = false; isMovingLeft = false; isMovingRight = false; }
+        function updateMuteButtonIcon() { const on = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>`, off = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`; muteBtn.innerHTML = isMuted ? off : on; }
 
-        // --- Event Listeners and Setup ---
         function setup() {
-            initCityMap(); resizeCanvas(); window.addEventListener('resize', resizeCanvas);
-            
-            const kM={'ArrowUp':'forward','w':'forward','ArrowDown':'backward','s':'backward','ArrowLeft':'left','a':'left','ArrowRight':'right','d':'right'};
-            document.addEventListener('keydown',e=>{if(e.repeat)return;const d=kM[e.key];if(d==='forward')isMovingForward=true;else if(d==='backward')isMovingBackward=true;else if(d==='left')isMovingLeft=true;else if(d==='right')isMovingRight=true;});
-            document.addEventListener('keyup',e=>{const d=kM[e.key];if(d==='forward')isMovingForward=false;else if(d==='backward')isMovingBackward=false;else if(d==='left')isMovingLeft=false;else if(d==='right')isMovingRight=false;});
-
-            touchPad.addEventListener('mousedown',handleStart);touchPad.addEventListener('mousemove',handleMove);touchPad.addEventListener('mouseup',handleEnd);touchPad.addEventListener('mouseleave',handleEnd);touchPad.addEventListener('touchstart',handleStart);touchPad.addEventListener('touchmove',handleMove);touchPad.addEventListener('touchend',handleEnd);touchPad.addEventListener('touchcancel',handleEnd);
-
-            muteBtn.addEventListener('click', () => {
-                isMuted = !isMuted;
-                if (typeof Tone !== 'undefined') {
-                    Tone.Destination.mute = isMuted;
-                }
-                updateMuteButtonIcon();
-            });
-
+            initCityMap();
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            const kM = { 'ArrowUp': 'forward', 'w': 'forward', 'ArrowDown': 'backward', 's': 'backward', 'ArrowLeft': 'left', 'a': 'left', 'ArrowRight': 'right', 'd': 'right' };
+            document.addEventListener('keydown', e => { if (e.repeat) return; const d = kM[e.key]; if (d === 'forward') isMovingForward = true; else if (d === 'backward') isMovingBackward = true; else if (d === 'left') isMovingLeft = true; else if (d === 'right') isMovingRight = true; });
+            document.addEventListener('keyup', e => { const d = kM[e.key]; if (d === 'forward') isMovingForward = false; else if (d === 'backward') isMovingBackward = false; else if (d === 'left') isMovingLeft = false; else if (d === 'right') isMovingRight = false; });
+            touchPad.addEventListener('mousedown', handleStart);
+            touchPad.addEventListener('mousemove', handleMove);
+            touchPad.addEventListener('mouseup', handleEnd);
+            touchPad.addEventListener('mouseleave', handleEnd);
+            touchPad.addEventListener('touchstart', handleStart);
+            touchPad.addEventListener('touchmove', handleMove);
+            touchPad.addEventListener('touchend', handleEnd);
+            touchPad.addEventListener('touchcancel', handleEnd);
+            muteBtn.addEventListener('click', () => { isMuted = !isMuted; if (typeof Tone !== 'undefined') { Tone.Destination.mute = isMuted; } updateMuteButtonIcon(); });
             canvas.addEventListener('click', e => {
                 if (gameState === 'gameOver') {
                     gameState = 'characterSelect';
-                    gameMode = 'graveyard'; 
+                    gameMode = 'graveyard';
                     savedSouls = 0;
                     selectedCharacterIndex = -1;
-                    numericGamePrice = (Math.random() * (10.00 - 0.25) + 0.25);
                     return;
                 }
                 if (gameState === 'characterSelect') {
-                    const rect = canvas.getBoundingClientRect(), cX=e.clientX-rect.left, cY=e.clientY-rect.top;
-                    
-                    let characterClicked = false;
-                    characterOptions.forEach((o, i) => {
-                        if(cX > o.x - o.w/2 && cX < o.x + o.w/2 && cY > o.y - o.h && cY < o.y) {
-                           selectedCharacterIndex = i;
-                           characterClicked = true;
-                        }
-                    });
-                    if (characterClicked) return;
-
+                    const r = canvas.getBoundingClientRect(), cX = e.clientX - r.left, cY = e.clientY - r.top;
+                    let clicked = false;
+                    characterOptions.forEach((o, i) => { if (cX > o.x - o.w / 2 && cX < o.x + o.w / 2 && cY > o.y - o.h && cY < o.y) { selectedCharacterIndex = i; clicked = true; } });
+                    if (clicked) return;
                     if (selectedCharacterIndex > -1 && cX > beginButtonRect.x && cX < beginButtonRect.x + beginButtonRect.w && cY > beginButtonRect.y && cY < beginButtonRect.y + beginButtonRect.h) {
-                        const choice = characterOptions[selectedCharacterIndex];
-                        playerColor = choice.c;
-                        graveyardPlayerColor = choice.c;
+                        const c = characterOptions[selectedCharacterIndex];
+                        playerColor = c.c;
+                        graveyardPlayerColor = c.c;
                         gameState = 'running';
                         startGame();
                     }
                 }
             });
-
-            // Initial setup for entry screen
-            numericGamePrice = (Math.random() * (10.00 - 0.25) + 0.25);
             updateMuteButtonIcon();
             gameLoop();
         }
@@ -784,5 +641,4 @@
     </script>
 </body>
 </html>
-
 
