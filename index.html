@@ -1340,11 +1340,9 @@
                         console.log(`Claimed ${claimable} cookies.`);
                     }
                 } else {
-                    // Become "Glazer" (King)
+                    // Redirect to payment frame to become "Glazer" (King)
                     playSoundEffect('purchase');
-                    state.player.isBakerKing = true;
-                    state.player.glazeStartTime = Date.now();
-                    console.log("You are now the King Glazer!");
+                    window.location.href = 'https://last-game-kappa.vercel.app/api/payment-frame';
                 }
                 
                 updateUI();
@@ -1405,8 +1403,25 @@
             }
             
             animate();
+
+            // ===============================================================
+            // WALLET CONNECTION (Silent, in background)
+            // ===============================================================
+            (async () => {
+                try {
+                    console.log('[Wallet] Connecting...');
+                    const { default: sdk } = await import('https://esm.sh/@farcaster/miniapp-sdk');
+                    await sdk.actions.ready();
+                    const provider = await sdk.wallet.getEthereumProvider();
+                    if (provider) {
+                        await provider.request({ method: 'eth_requestAccounts' });
+                        console.log('[Wallet] Connected successfully');
+                    }
+                } catch (error) {
+                    console.log('[Wallet] Connection failed (optional):', error.message);
+                }
+            })();
         });
     </script>
 </body>
 </html>
-
