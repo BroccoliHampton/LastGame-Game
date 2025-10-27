@@ -1,1412 +1,1418 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Donut Miner ツ</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- Include Tone.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
-    <style>
-        /* =============================================================== */
-        /* KISSAKI/TAMAGOTCHI AESTHETIC STYLING                            */
-        /* =============================================================== */
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Donut Miner ツ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        /* =============================================================== */
+        /* KISSAKI/TAMAGOTCHI AESTHETIC STYLING                            */
+        /* =============================================================== */
 
-        /* Custom Font - Nunito is a good match for the cute, rounded look */
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap'); /* Changed to Comic Neue */
-        @import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap'); /* NEW: Added Luckiest Guy font */
-        
-        /* This is the "browser" background, outside the phone */
-        body {
-            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            overscroll-behavior: none; /* Prevents "pull-to-refresh" */
-            
-            /* Apply app-shell styling directly to body */
-            background-color: #FFC0CB; /* Soft Pink */
-            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg opacity='0.7'%3E%3Crect x='10' y='10' width='3' height='10' fill='%23FFD700' transform='rotate(25 11.5 15)' /%3E%3Crect x='60' y='30' width='3' height='10' fill='%23FF69B4' transform='rotate(140 61.5 35)' /%3E%3Crect x='30' y='70' width='3' height='10' fill='%2390EE90' transform='rotate(70 31.5 75)' /%3E%3Crect x='80' y='85' width='3' height='10' fill='%2387CEEB' transform='rotate(210 81.5 90)' /%3E%3Crect x='5' y='45' width='3' height='10' fill='%23FFD700' transform='rotate(100 6.5 50)' /%3E%3Crect x='90' y='5' width='3' height='10' fill='%23FF69B4' transform='rotate(300 91.5 10)' /%3E%3C/g%3E%3C/svg%3E"), 
-                            linear-gradient(135deg, #FFC0CB 0%, #FFDDE1 100%); /* Soft Pink base */
-            background-size: 200px 200px, cover; /* Adjust size for sprinkles, cover for gradient */
-            background-blend-mode: overlay, normal;
-            background-attachment: fixed;
-            color: #333333; /* Dark gray for general text */
-            
-            /* Ensure the body takes full viewport height and manages overflow */
-            min-height: 100vh;
-            display: flex; /* Use flexbox to organize main content and nav */
-            flex-direction: column; /* Stack content vertically */
-            padding: 0; /* Remove padding */
-            margin: 0; /* Remove margin */
-        }
+        /* Custom Font - Nunito is a good match for the cute, rounded look */
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap'); /* Changed to Comic Neue */
+        @import url('https://fonts.googleapis.com/css2?family=Luckiest+Guy&display=swap'); /* NEW: Added Luckiest Guy font */
+        
+        /* This is the "browser" background, outside the phone */
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            overscroll-behavior: none; /* Prevents "pull-to-refresh" */
+            
+            /* Apply app-shell styling directly to body */
+            background-color: #FFC0CB; /* Soft Pink */
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg opacity='0.7'%3E%3Crect x='10' y='10' width='3' height='10' fill='%23FFD700' transform='rotate(25 11.5 15)' /%3E%3Crect x='60' y='30' width='3' height='10' fill='%23FF69B4' transform='rotate(140 61.5 35)' /%3E%3Crect x='30' y='70' width='3' height='10' fill='%2390EE90' transform='rotate(70 31.5 75)' /%3E%3Crect x='80' y='85' width='3' height='10' fill='%2387CEEB' transform='rotate(210 81.5 90)' /%3E%3Crect x='5' y='45' width='3' height='10' fill='%23FFD700' transform='rotate(100 6.5 50)' /%3E%3Crect x='90' y='5' width='3' height='10' fill='%23FF69B4' transform='rotate(300 91.5 10)' /%3E%3C/g%3E%3C/svg%3E"), 
+                            linear-gradient(135deg, #FFC0CB 0%, #FFDDE1 100%); /* Soft Pink base */
+            background-size: 200px 200px, cover; /* Adjust size for sprinkles, cover for gradient */
+            background-blend-mode: overlay, normal;
+            background-attachment: fixed;
+            color: #333333; /* Dark gray for general text */
+            
+            /* Ensure the body takes full viewport height and manages overflow */
+            min-height: 100vh;
+            display: flex; /* Use flexbox to organize main content and nav */
+            flex-direction: column; /* Stack content vertically */
+            padding: 0; /* Remove padding */
+            margin: 0; /* Remove margin */
+        }
 
-        /* Custom Colors inspired by Tamagotchi */
-        /* Changed to pale butter yellow */
-        .bg-tamagotchi-bg-light { background-color: #FFFACD; } 
-        .text-tamagotchi-dark { color: #333333; } /* General dark text */
-        .text-tamagotchi-pink-dark { color: #E75480; } /* Stronger, cuter pink for accents/headings */
-        .text-tamagotchi-pink-light { color: #FF9AA2; } /* Lighter pink for accents */
-        
-        /* Button colors */
-        .bg-tamagotchi-button-pink { 
-            background: linear-gradient(to bottom, #FFDDE1, #E75480); /* Puffy pink gradient */
-            color: white;
-            font-weight: 800;
-            border: 2px solid #C04A70; /* Darker border for depth */
-        }
-        .bg-tamagotchi-button-teal { 
-            background: linear-gradient(to bottom, #B3F0E6, #66CCBF); /* Teal gradient */
-            color: white;
-            font-weight: 800;
-            border: 2px solid #50A89C; /* Darker border for depth */
-        }
-        .bg-tamagotchi-button-pink:active, .bg-tamagotchi-button-teal:active {
-            transform: translateY(1px); /* Simple press effect */
-            box-shadow: none;
-        }
+        /* Custom Colors inspired by Tamagotchi */
+        /* Changed to pale butter yellow */
+        .bg-tamagotchi-bg-light { background-color: #FFFACD; } 
+        .text-tamagotchi-dark { color: #333333; } /* General dark text */
+        .text-tamagotchi-pink-dark { color: #E75480; } /* Stronger, cuter pink for accents/headings */
+        .text-tamagotchi-pink-light { color: #FF9AA2; } /* Lighter pink for accents */
+        
+        /* Button colors */
+        .bg-tamagotchi-button-pink { 
+            background: linear-gradient(to bottom, #FFDDE1, #E75480); /* Puffy pink gradient */
+            color: white;
+            font-weight: 800;
+            border: 2px solid #C04A70; /* Darker border for depth */
+        }
+        .bg-tamagotchi-button-teal { 
+            background: linear-gradient(to bottom, #B3F0E6, #66CCBF); /* Teal gradient */
+            color: white;
+            font-weight: 800;
+            border: 2px solid #50A89C; /* Darker border for depth */
+        }
+        .bg-tamagotchi-button-pink:active, .bg-tamagotchi-button-teal:active {
+            transform: translateY(1px); /* Simple press effect */
+            box-shadow: none;
+        }
 
-        /* Border/Card colors */
-        .border-tamagotchi-subtle { border-color: #E0E0E0; } /* Light gray border */
-        /* Changed to pale butter yellow */
-        .bg-tamagotchi-card { 
-            background-color: #FFFACD; /* Pale Butter Yellow for cards */
-            border: 2px solid #E0E0E0; /* Subtle border */
-        }
-        .border-tamagotchi-accent-pink { border-color: #FF9AA2; /* Pink accent border */
-        }
+        /* Border/Card colors */
+        .border-tamagotchi-subtle { border-color: #E0E0E0; } /* Light gray border */
+        /* Changed to pale butter yellow */
+        .bg-tamagotchi-card { 
+            background-color: #FFFACD; /* Pale Butter Yellow for cards */
+            border: 2px solid #E0E0E0; /* Subtle border */
+        }
+        .border-tamagotchi-accent-pink { border-color: #FF9AA2; /* Pink accent border */
+        }
 
-        /* General rounding */
-        .rounded-tamagotchi-lg { border-radius: 20px; } /* More pronounced rounding for cards/buttons */
-        .rounded-tamagotchi-md { border-radius: 14px; } /* Medium rounding */
-        .rounded-tamagotchi-full { border-radius: 9999px; } /* Full rounding for circular elements */
+        /* General rounding */
+        .rounded-tamagotchi-lg { border-radius: 20px; } /* More pronounced rounding for cards/buttons */
+        .rounded-tamagotchi-md { border-radius: 14px; } /* Medium rounding */
+        .rounded-tamagotchi-full { border-radius: 9999px; } /* Full rounding for circular elements */
 
-        /* Shadows (softer, toy-like) */
-        .shadow-tamagotchi { box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1); } /* More pronounced, softer shadow */
-        
-        .nav-icon span {
-            font-size: 32px; /* Large emoji */
-            color: #A0A0A0; /* Soft gray for inactive icons */
-            transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
-        }
-        .nav-icon.active span {
-            color: #E75480; /* Stronger pink for active icon */
-            transform: scale(1.1);
-        }
+        /* Shadows (softer, toy-like) */
+        .shadow-tamagotchi { box-shadow: 0px 6px 15px rgba(0, 0, 0, 0.1); } /* More pronounced, softer shadow */
+        
+        .nav-icon span {
+            font-size: 32px; /* Large emoji */
+            color: #A0A0A0; /* Soft gray for inactive icons */
+            transition: color 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .nav-icon.active span {
+            color: #E75480; /* Stronger pink for active icon */
+            transform: scale(1.1);
+        }
 
-        /* Style for the 3D canvas */
-        #cookie-canvas {
-            width: 100%;
-            height: 100%;
-            max-width: 400px; /* Keep max width to prevent distortion on very wide screens */
-            max-height: 400px; /* Keep max height */
-            cursor: grab;
-            touch-action: none;
-            position: relative; /* Ensure canvas is positioned above static */
-            z-index: 20; /* Higher than static */
-            margin: auto; /* Center the canvas */
-        }
-        #cookie-canvas:active {
-            cursor: grabbing;
-        }
+        /* Style for the 3D canvas */
+        #cookie-canvas {
+            width: 100%;
+            height: 100%;
+            max-width: 400px; /* Keep max width to prevent distortion on very wide screens */
+            max-height: 400px; /* Keep max height */
+            cursor: grab;
+            touch-action: none;
+            position: relative; /* Ensure canvas is positioned above static */
+            z-index: 20; /* Higher than static */
+            margin: auto; /* Center the canvas */
+        }
+        #cookie-canvas:active {
+            cursor: grabbing;
+        }
 
-        /* Glaze color button styling */
-        #glaze-color-button {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            z-index: 30; /* Ensure it's above other elements in the container */
-            width: 40px; /* Make it a square */
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            border-radius: 50%; /* Circular button */
-            cursor: pointer;
-            border: 2px solid #E0E0E0; /* Subtle border */
-            background-color: #f0f0f0; /* Default light background */
-            box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
-            transition: transform 0.1s ease-in-out, background-color 0.2s;
-        }
-        #glaze-color-button:active {
-            transform: translateY(1px);
-            box-shadow: none;
-        }
+        /* Glaze color button styling */
+        #glaze-color-button {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            z-index: 30; /* Ensure it's above other elements in the container */
+            width: 40px; /* Make it a square */
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            border-radius: 50%; /* Circular button */
+            cursor: pointer;
+            border: 2px solid #E0E0E0; /* Subtle border */
+            background-color: #f0f0f0; /* Default light background */
+            box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
+            transition: transform 0.1s ease-in-out, background-color 0.2s;
+        }
+        #glaze-color-button:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
 
-        /* =============================================================== */
-        /* GLITCHY STATIC TV EFFECT (Pale Butter Yellow Background)      */
-        /* =============================================================== */
+        /* =============================================================== */
+        /* GLITCHY STATIC TV EFFECT (Pale Butter Yellow Background)      */
+        /* =============================================================== */
 
-        .glitch-static {
-            position: relative; /* Needed for pseudo-elements */
-            overflow: hidden;
-            background-color: #FFFACD !important; /* Pale Butter Yellow background - Added !important to override */
-        }
+        .glitch-static {
+            position: relative; /* Needed for pseudo-elements */
+            overflow: hidden;
+            background-color: #FFFACD !important; /* Pale Butter Yellow background - Added !important to override */
+        }
 
-        .glitch-static::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                linear-gradient(rgba(240, 230, 200, 0.4) 1px, transparent 1px), /* Softer static lines, matching yellow */
-                linear-gradient(90deg, rgba(240, 230, 200, 0.4) 1px, transparent 1px);
-            background-size: 4px 4px; /* Slightly larger static pixels */
-            animation: static-flicker 0.5s infinite alternate, static-move 3s steps(10) infinite; /* Slower animations */
-            opacity: 0.6; /* Softer static */
-            pointer-events: none; /* Allows clicks/interactions with elements behind it */
-            z-index: 15; /* Below donut, above container bg */
-        }
+        .glitch-static::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(240, 230, 200, 0.4) 1px, transparent 1px), /* Softer static lines, matching yellow */
+                linear-gradient(90deg, rgba(240, 230, 200, 0.4) 1px, transparent 1px);
+            background-size: 4px 4px; /* Slightly larger static pixels */
+            animation: static-flicker 0.5s infinite alternate, static-move 3s steps(10) infinite; /* Slower animations */
+            opacity: 0.6; /* Softer static */
+            pointer-events: none; /* Allows clicks/interactions with elements behind it */
+            z-index: 15; /* Below donut, above container bg */
+        }
 
-        .glitch-static::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(
-                to bottom,
-                transparent 0%,
-                rgba(240, 230, 200, 0.2) 50%, /* Softer yellow scanline */
-                transparent 100%
-            );
-            mix-blend-mode: overlay; /* Creates light distortion effect */
-            animation: scanline 8s linear infinite; /* Slower scanline */
-            opacity: 0.3; /* Slightly more pronounced scanline */
-            pointer-events: none;
-            z-index: 16; /* Slightly above main static */
-        }
+        .glitch-static::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(240, 230, 200, 0.2) 50%, /* Softer yellow scanline */
+                transparent 100%
+            );
+            mix-blend-mode: overlay; /* Creates light distortion effect */
+            animation: scanline 8s linear infinite; /* Slower scanline */
+            opacity: 0.3; /* Slightly more pronounced scanline */
+            pointer-events: none;
+            z-index: 16; /* Slightly above main static */
+        }
 
-        @keyframes static-flicker {
-            0% { background-position: 0 0; opacity: 0.6; }
-            50% { background-position: 8px 8px; opacity: 0.5; } /* Larger displacement for flicker */
-            100% { background-position: 0 0; opacity: 0.7; }
-        }
+        @keyframes static-flicker {
+            0% { background-position: 0 0; opacity: 0.6; }
+            50% { background-position: 8px 8px; opacity: 0.5; } /* Larger displacement for flicker */
+            100% { background-position: 0 0; opacity: 0.7; }
+        }
 
-        @keyframes static-move {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(0, 100%); }
-        }
+        @keyframes static-move {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(0, 100%); }
+        }
 
-        @keyframes scanline {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 100%; }
-        }
+        @keyframes scanline {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 100%; }
+        }
 
-        /* =============================================================== */
-        /* FALLING SNOW (GREY PIXELS) EFFECT                              */
-        /* =============================================================== */
-        .falling-snow {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 17; /* Above static, below donut */
-            overflow: hidden; /* Ensures snowflakes don't go outside */
-        }
+        /* =============================================================== */
+        /* FALLING SNOW (GREY PIXELS) EFFECT                              */
+        /* =============================================================== */
+        .falling-snow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 17; /* Above static, below donut */
+            overflow: hidden; /* Ensures snowflakes don't go outside */
+        }
 
-        .falling-snow::before,
-        .falling-snow::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                /* Create many small grey "pixels" */
-                radial-gradient(circle at 10% 20%, #A0A0A0 1px, transparent 1px),
-                radial-gradient(circle at 70% 80%, #C0C0C0 1px, transparent 1px),
-                radial-gradient(circle at 30% 60%, #B0B0B0 1px, transparent 1px),
-                radial-gradient(circle at 90% 10%, #E0E0E0 1px, transparent 1px),
-                radial-gradient(circle at 50% 40%, #D0D0D0 1px, transparent 1px),
-                radial-gradient(circle at 20% 90%, #F0F0F0 1px, transparent 1px),
-                radial-gradient(circle at 80% 30%, #A0A0A0 1px, transparent 1px),
-                radial-gradient(circle at 40% 70%, #C0C0C0 1px, transparent 1px),
-                radial-gradient(circle at 60% 5%, #B0B0B0 1px, transparent 1px),
-                radial-gradient(circle at 5% 50%, #E0E0E0 1px, transparent 1px),
-                radial-gradient(circle at 95% 45%, #D0D0D0 1px, transparent 1px);
-            background-repeat: repeat;
-            background-size: 20px 20px; /* Control the density */
-            animation: snowfall 10s linear infinite; /* Slower fall */
-            opacity: 0.7; /* Make them subtle */
-        }
+        .falling-snow::before,
+        .falling-snow::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                /* Create many small grey "pixels" */
+                radial-gradient(circle at 10% 20%, #A0A0A0 1px, transparent 1px),
+                radial-gradient(circle at 70% 80%, #C0C0C0 1px, transparent 1px),
+                radial-gradient(circle at 30% 60%, #B0B0B0 1px, transparent 1px),
+                radial-gradient(circle at 90% 10%, #E0E0E0 1px, transparent 1px),
+                radial-gradient(circle at 50% 40%, #D0D0D0 1px, transparent 1px),
+                radial-gradient(circle at 20% 90%, #F0F0F0 1px, transparent 1px),
+                radial-gradient(circle at 80% 30%, #A0A0A0 1px, transparent 1px),
+                radial-gradient(circle at 40% 70%, #C0C0C0 1px, transparent 1px),
+                radial-gradient(circle at 60% 5%, #B0B0B0 1px, transparent 1px),
+                radial-gradient(circle at 5% 50%, #E0E0E0 1px, transparent 1px),
+                radial-gradient(circle at 95% 45%, #D0D0D0 1px, transparent 1px);
+            background-repeat: repeat;
+            background-size: 20px 20px; /* Control the density */
+            animation: snowfall 10s linear infinite; /* Slower fall */
+            opacity: 0.7; /* Make them subtle */
+        }
 
-        .falling-snow::after {
-            animation-delay: 5s; /* Stagger the animation for more continuous effect */
-            background-size: 25px 25px; /* Different size for variety */
-            opacity: 0.6;
-            filter: blur(0.5px); /* Slight blur for depth */
-        }
+        .falling-snow::after {
+            animation-delay: 5s; /* Stagger the animation for more continuous effect */
+            background-size: 25px 25px; /* Different size for variety */
+            opacity: 0.6;
+            filter: blur(0.5px); /* Slight blur for depth */
+        }
 
-        @keyframes snowfall {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
-        }
+        @keyframes snowfall {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
 
-        /* =============================================================== */
-        /* SCROLLING TICKER                                                */
-        /* =============================================================== */
-        .ticker-wrap {
-            width: 100%;
-            overflow: hidden;
-            background-color: #333; /* Dark background */
-            padding: 4px 0; /* Vertical padding */
-            border-top: 2px solid #555;
-            border-bottom: 2px solid #555;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
-        }
-        
-        /* Specific margins for top and bottom tickers */
-        #top-ticker { margin-bottom: 8px; }
-        #bottom-ticker { margin-top: 8px; }
+        /* =============================================================== */
+        /* SCROLLING TICKER                                                */
+        /* =============================================================== */
+        .ticker-wrap {
+            width: 100%;
+            overflow: hidden;
+            background-color: #333; /* Dark background */
+            padding: 4px 0; /* Vertical padding */
+            border-top: 2px solid #555;
+            border-bottom: 2px solid #555;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* Specific margins for top and bottom tickers */
+        #top-ticker { margin-bottom: 8px; }
+        #bottom-ticker { margin-top: 8px; }
 
 
-        .ticker-move {
-            display: inline-block;
-            white-space: nowrap;
-            animation: scroll-ticker 20s linear infinite; /* Adjust duration for speed */
-            color: #FFFACD; /* Pale Butter Yellow text */
-            font-size: 14px;
-            font-weight: bold;
-            font-family: 'Comic Neue', cursive; /* Match other text */
-            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
-        }
+        .ticker-move {
+            display: inline-block;
+            white-space: nowrap;
+            animation: scroll-ticker 20s linear infinite; /* Adjust duration for speed */
+            color: #FFFACD; /* Pale Butter Yellow text */
+            font-size: 14px;
+            font-weight: bold;
+            font-family: 'Comic Neue', cursive; /* Match other text */
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
 
-        .ticker-move-reverse {
-            display: inline-block;
-            white-space: nowrap;
-            animation: scroll-ticker-reverse 20s linear infinite; /* Adjust duration for speed */
-            color: #FFFACD; /* Pale Butter Yellow text */
-            font-size: 14px;
-            font-weight: bold;
-            font-family: 'Comic Neue', cursive; /* Match other text */
-            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
-        }
+        .ticker-move-reverse {
+            display: inline-block;
+            white-space: nowrap;
+            animation: scroll-ticker-reverse 20s linear infinite; /* Adjust duration for speed */
+            color: #FFFACD; /* Pale Butter Yellow text */
+            font-size: 14px;
+            font-weight: bold;
+            font-family: 'Comic Neue', cursive; /* Match other text */
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
 
-        @keyframes scroll-ticker {
-            0% { transform: translateX(0%); } /* Start visible */
-            100% { transform: translateX(-50%); } /* Move halfway, showing the duplicated text */
-        }
+        @keyframes scroll-ticker {
+            0% { transform: translateX(0%); } /* Start visible */
+            100% { transform: translateX(-50%); } /* Move halfway, showing the duplicated text */
+        }
 
-        @keyframes scroll-ticker-reverse {
-            0% { transform: translateX(-50%); } /* Start halfway */
-            100% { transform: translateX(0%); } /* Move back to start */
-        }
-        
-        /* =============================================================== */
-        /* DARK MODE STYLING                                               */
-        /* =============================================================== */
+        @keyframes scroll-ticker-reverse {
+            0% { transform: translateX(-50%); } /* Start halfway */
+            100% { transform: translateX(0%); } /* Move back to start */
+        }
+        
+        /* =============================================================== */
+        /* DARK MODE STYLING                                               */
+        /* =============================================================== */
 
-        /* Chocolate brown background */
-        body.dark { /* Changed from #app-shell.dark to body.dark */
-            background-color: #5C3317; /* Chocolate Brown */
-            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%236B4A34' fill-opacity='0.4'%3E%3Cpath d='M10 0L0 10l10 10 10-10z'/%3E%3Cpath d='M0 10L10 20l10-10L10 0z'/%3E%3C/g%3E%3C/svg%3E"), 
-                            linear-gradient(135deg, #5C3317 0%, #3D2B1F 100%);
-        }
+        /* Chocolate brown background */
+        body.dark { /* Changed from #app-shell.dark to body.dark */
+            background-color: #5C3317; /* Chocolate Brown */
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%236B4A34' fill-opacity='0.4'%3E%3Cpath d='M10 0L0 10l10 10 10-10z'/%3E%3Cpath d='M0 10L10 20l10-10L10 0z'/%3E%3C/g%3E%3C/svg%3E"), 
+                            linear-gradient(135deg, #5C3317 0%, #3D2B1F 100%);
+        }
 
-        /* Dark cards */
-        body.dark .bg-tamagotchi-card { /* Changed from #app-shell.dark to body.dark */
-            background-color: #3D2B1F; /* Dark, rich brown */
-            border-color: #4A3A2A; /* Darker border */
-        }
-        
-        /* Light text for dark backgrounds */
-        body.dark .text-tamagotchi-dark { color: #F5E6C1; } /* Creamy white text */
-        body.dark .text-gray-500 { color: #A8998A; } /* Lighter, desaturated brown text */
-        body.dark .text-gray-600 { color: #B8A99A; }
-        
-        /* Pinks can stay, they pop nicely on brown */
-        body.dark .text-tamagotchi-pink-dark { color: #FF9AA2; } /* Lighten the pink a bit */
+        /* Dark cards */
+        body.dark .bg-tamagotchi-card { /* Changed from #app-shell.dark to body.dark */
+            background-color: #3D2B1F; /* Dark, rich brown */
+            border-color: #4A3A2A; /* Darker border */
+        }
+        
+        /* Light text for dark backgrounds */
+        body.dark .text-tamagotchi-dark { color: #F5E6C1; } /* Creamy white text */
+        body.dark .text-gray-500 { color: #A8998A; } /* Lighter, desaturated brown text */
+        body.dark .text-gray-600 { color: #B8A99A; }
+        
+        /* Pinks can stay, they pop nicely on brown */
+        body.dark .text-tamagotchi-pink-dark { color: #FF9AA2; } /* Lighten the pink a bit */
 
-        /* Glitch background */
-        body.dark .glitch-static { /* Changed from #app-shell.dark to body.dark */
-            background-color: #3D2B1F !important; /* Dark brown */
-        }
-        body.dark .glitch-static::before { /* Changed from #app-shell.dark to body.dark */
-            background: 
-                linear-gradient(rgba(150, 130, 110, 0.4) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(150, 130, 110, 0.4) 1px, transparent 1px);
-        }
-        body.dark .glitch-static::after { /* Changed from #app-shell.dark to body.dark */
-            background: linear-gradient(
-                to bottom,
-                transparent 0%,
-                rgba(150, 130, 110, 0.2) 50%,
-                transparent 100%
-            );
-        }
-        
-        /* Falling snow (grey pixels) will look good on dark */
-        body.dark .falling-snow::before { /* Changed from #app-shell.dark to body.dark */
-            opacity: 0.4;
-        }
-        body.dark .falling-snow::after { /* Changed from #app-shell.dark to body.dark */
-            opacity: 0.3;
-        }
+        /* Glitch background */
+        body.dark .glitch-static { /* Changed from #app-shell.dark to body.dark */
+            background-color: #3D2B1F !important; /* Dark brown */
+        }
+        body.dark .glitch-static::before { /* Changed from #app-shell.dark to body.dark */
+            background: 
+                linear-gradient(rgba(150, 130, 110, 0.4) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(150, 130, 110, 0.4) 1px, transparent 1px);
+        }
+        body.dark .glitch-static::after { /* Changed from #app-shell.dark to body.dark */
+            background: linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(150, 130, 110, 0.2) 50%,
+                transparent 100%
+            );
+        }
+        
+        /* Falling snow (grey pixels) will look good on dark */
+        body.dark .falling-snow::before { /* Changed from #app-shell.dark to body.dark */
+            opacity: 0.4;
+        }
+        body.dark .falling-snow::after { /* Changed from #app-shell.dark to body.dark */
+            opacity: 0.3;
+        }
 
-        /* Subtle borders */
-        body.dark .border-tamagotchi-subtle { border-color: #4A3A2A; } /* Changed from #app-shell.dark to body.dark */
-        
-        /* Light-on-dark for nav */
-        body.dark .nav-icon span { /* Changed from #app-shell.dark to body.dark */
-            color: #A8998A; /* Lighter inactive icon */
-        }
-        body.dark .nav-icon.active span { /* Changed from #app-shell.dark to body.dark */
-            color: #FF9AA2; /* Lighter active pink */
-        }
-        
-        /* Color cycle button */
-        body.dark #glaze-color-button { /* Changed from #app-shell.dark to body.dark */
-            background-color: #3D2B1F;
-            border-color: #4A3A2A;
-            color: #F5E6C1; /* Light text */
-        }
-        
-        /* App background for sticky footer */
-        body.dark .bg-tamagotchi-bg-light { /* Changed from #app-shell.dark to body.dark */
-            background-color: #3D2B1F; /* Dark brown */
-        }
+        /* Subtle borders */
+        body.dark .border-tamagotchi-subtle { border-color: #4A3A2A; } /* Changed from #app-shell.dark to body.dark */
+        
+        /* Light-on-dark for nav */
+        body.dark .nav-icon span { /* Changed from #app-shell.dark to body.dark */
+            color: #A8998A; /* Lighter inactive icon */
+        }
+        body.dark .nav-icon.active span { /* Changed from #app-shell.dark to body.dark */
+            color: #FF9AA2; /* Lighter active pink */
+        }
+        
+        /* Color cycle button */
+        body.dark #glaze-color-button { /* Changed from #app-shell.dark to body.dark */
+            background-color: #3D2B1F;
+            border-color: #4A3A2A;
+            color: #F5E6C1; /* Light text */
+        }
+        
+        /* App background for sticky footer */
+        body.dark .bg-tamagotchi-bg-light { /* Changed from #app-shell.dark to body.dark */
+            background-color: #3D2B1F; /* Dark brown */
+        }
 
-        /* NEW: Zoom Slider Styling */
-        .zoom-slider {
-            position: absolute;
-            top: 50%;
-            right: 12px;
-            transform: translateY(-50%); /* Center vertically */
-            width: 20px; /* Track thickness */
-            height: 120px; /* Track length */
-            -webkit-appearance: none;
-            appearance: none;
-            writing-mode: vertical-lr; /* Make it vertical */
-            direction: ltr;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            z-index: 30;
-            padding: 0;
-            transition: background 0.2s;
-        }
-        /* Dark mode style for slider */
-        body.dark .zoom-slider { /* Changed from #app-shell.dark to body.dark */
-            background: rgba(255, 255, 255, 0.2);
-        }
+        /* NEW: Zoom Slider Styling */
+        .zoom-slider {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%); /* Center vertically */
+            width: 20px; /* Track thickness */
+            height: 120px; /* Track length */
+            -webkit-appearance: none;
+            appearance: none;
+            writing-mode: vertical-lr; /* Make it vertical */
+            direction: ltr;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            z-index: 30;
+            padding: 0;
+            transition: background 0.2s;
+        }
+        /* Dark mode style for slider */
+        body.dark .zoom-slider { /* Changed from #app-shell.dark to body.dark */
+            background: rgba(255, 255, 255, 0.2);
+        }
 
-        /* Thumb styling */
-        .zoom-slider::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 26px; /* Touch target */
-            height: 26px;
-            background: #FFFACD; /* Pale Butter Yellow */
-            border-radius: 50%;
-            border: 2px solid #E75480; /* Pink border */
-            cursor: grab;
-        }
-        .zoom-slider::-moz-range-thumb {
-            width: 26px;
-            height: 26px;
-            background: #FFFACD;
-            border-radius: 50%;
-            border: 2px solid #E75480;
-            cursor: grab;
-        }
-        /* Dark mode thumb */
-        body.dark .zoom-slider::-webkit-slider-thumb { /* Changed from #app-shell.dark to body.dark */
-            background: #3D2B1F; /* Dark brown */
-            border-color: #FF9AA2; /* Lighter pink */
-        }
-        body.dark .zoom-slider::-moz-range-thumb { /* Changed from #app-shell.dark to body.dark */
-            background: #3D2B1F;
-            border-color: #FF9AA2;
-        }
-        /* END NEW STYLES */
+        /* Thumb styling */
+        .zoom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 26px; /* Touch target */
+            height: 26px;
+            background: #FFFACD; /* Pale Butter Yellow */
+            border-radius: 50%;
+            border: 2px solid #E75480; /* Pink border */
+            cursor: grab;
+        }
+        .zoom-slider::-moz-range-thumb {
+            width: 26px;
+            height: 26px;
+            background: #FFFACD;
+            border-radius: 50%;
+            border: 2px solid #E75480;
+            cursor: grab;
+        }
+        /* Dark mode thumb */
+        body.dark .zoom-slider::-webkit-slider-thumb { /* Changed from #app-shell.dark to body.dark */
+            background: #3D2B1F; /* Dark brown */
+            border-color: #FF9AA2; /* Lighter pink */
+        }
+        body.dark .zoom-slider::-moz-range-thumb { /* Changed from #app-shell.dark to body.dark */
+            background: #3D2B1F;
+            border-color: #FF9AA2;
+        }
+        /* END NEW STYLES */
 
-    </style>
+    </style>
 </head>
 <body class="text-tamagotchi-dark">
-        
-    <main class="flex-grow flex flex-col px-3 pt-4 pb-1 overflow-y-auto max-w-lg mx-auto w-full"> <!-- Added max-w-lg mx-auto w-full for content centering --><div class="flex justify-between items-center mb-2">
-            <div class="flex flex-col">
-                <h1 class="text-3xl font-black text-tamagotchi-pink-dark" style="font-family: 'Luckiest Guy', cursive;">Donut Miner</h1>
-            </div>
-            <div class="flex space-x-2">
-                <button id="dark-mode-toggle-button" class="bg-tamagotchi-button-teal text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
-                    🌙
-                </button>
-                <!-- Updated Audio Button --><button id="music-toggle-button" class="bg-tamagotchi-button-pink text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
-                    🔇
-                </button>
-                <!-- NEW SFX Button --><button id="sfx-toggle-button" class="bg-tamagotchi-button-teal text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
-                    🔊
-                </button>
-            </div>
-        </div>
+        
+    <main class="flex-grow flex flex-col px-3 pt-4 pb-1 overflow-y-auto max-w-lg mx-auto w-full"> <div class="flex justify-between items-center mb-2">
+            <div class="flex flex-col">
+                <h1 class="text-3xl font-black text-tamagotchi-pink-dark" style="font-family: 'Luckiest Guy', cursive;">Donut Miner</h1>
+            </div>
+            <div class="flex space-x-2">
+                <button id="dark-mode-toggle-button" class="bg-tamagotchi-button-teal text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
+                    🌙
+                </button>
+                <button id="music-toggle-button" class="bg-tamagotchi-button-pink text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
+                    🔇
+                </button>
+                <button id="sfx-toggle-button" class="bg-tamagotchi-button-teal text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
+                    🔊
+                </button>
+            </div>
+        </div>
 
-        <!-- =============================================================== --><!-- GLAZERY VIEW (Restored)                                       --><!-- =============================================================== --><div id="view-glazery" class="flex-grow flex flex-col">
-            <h2 class="text-2xl font-black text-tamagotchi-pink-dark mb-1">Glazery</h2>
-            
-            <p class="text-sm text-gray-500 mb-2" style="font-family: 'Comic Neue', cursive;">
-                Pay the Glaze Price to become KING GLAZER and earn 100% of $DONUT emissions until someone takes the spot after you.
-            </p>
-            <div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-2 grid grid-cols-3 gap-2">
-                <div class="text-center">
-                    <div class="text-xs text-gray-500 font-semibold">Glazer</div>
-                    <div id="bakery-king-status" class="font-extrabold text-sm truncate text-tamagotchi-dark">None</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-xs text-gray-500 font-semibold">Donuts/s</div>
-                    <div class="font-extrabold text-sm text-tamagotchi-dark">🍩 <span id="bakery-cps">0.00</span></div>
-                </div>
-                <div class="text-center">
-                    <div class="text-xs text-gray-500 font-semibold">Glaze Time</div>
-                    <div class="font-extrabold text-sm text-tamagotchi-dark"><span id="bakery-baked">00:00:00</span></div>
-                </div>
-            </div>
+        <div id="view-glazery" class="flex-grow flex flex-col">
+            <h2 class="text-2xl font-black text-tamagotchi-pink-dark mb-1">Glazery</h2>
+            
+            <p class="text-sm text-gray-500 mb-2" style="font-family: 'Comic Neue', cursive;">
+                Pay the Glaze Price to become KING GLAZER and earn 100% of $DONUT emissions until someone takes the spot after you.
+            </p>
+            <div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-2 grid grid-cols-3 gap-2">
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 font-semibold">Glazer</div>
+                    <div id="bakery-king-status" class="font-extrabold text-sm truncate text-tamagotchi-dark">None</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 font-semibold">Donuts/s</div>
+                    <div class="font-extrabold text-sm text-tamagotchi-dark">🍩 <span id="bakery-cps">0.00</span></div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 font-semibold">Glaze Time</div>
+                    <div class="font-extrabold text-sm text-tamagotchi-dark"><span id="bakery-baked">00:00:00</span></div>
+                </div>
+            </div>
 
-            <!-- NEW: Second Row of Stats --><div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-2 grid grid-cols-3 gap-2 mt-2">
-                <div class="text-center">
-                    <div class="text-xs text-gray-500 font-semibold">Donut Balance</div>
-                    <div id="player-donut-balance" class="font-extrabold text-sm truncate text-tamagotchi-dark">0</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-xs text-gray-500 font-semibold">Total Glaze Time</div>
-                    <div id="player-total-glaze-time" class="font-extrabold text-sm text-tamagotchi-dark">00:00:00</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-xs text-gray-500 font-semibold">% Mined</div>
-                    <div class="font-extrabold text-sm text-tamagotchi-dark"><span id="player-percent-mined">0.00</span>%</div>
-                </div>
-            </div>
+            <div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-2 grid grid-cols-3 gap-2 mt-2">
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 font-semibold">Donut Balance</div>
+                    <div id="player-donut-balance" class="font-extrabold text-sm truncate text-tamagotchi-dark">0</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 font-semibold">Total Glaze Time</div>
+                    <div id="player-total-glaze-time" class="font-extrabold text-sm text-tamagotchi-dark">00:00:00</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 font-semibold">% Mined</div>
+                    <div class="font-extrabold text-sm text-tamagotchi-dark"><span id="player-percent-mined">0.00</span>%</div>
+                </div>
+            </div>
 
-            <div id="top-ticker" class="ticker-wrap" style="margin-bottom: 4px;">
-                <div class="ticker-move">
-                    <!-- UPDATED TEXT --><span>Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour. ... Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour. ... </span>
-                </div>
-            </div>
+            <div id="top-ticker" class="ticker-wrap" style="margin-bottom: 4px;">
+                <div class="ticker-move">
+                    <span>Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour. ... Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour. ... </span>
+                </div>
+            </div>
 
-            <div id="cookie-rain-container" class="relative h-64 flex items-center justify-center overflow-hidden bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi glitch-static">
-                <div class="falling-snow"></div>
-                <canvas id="cookie-canvas"></canvas>
-                <button id="glaze-color-button" class="shadow-tamagotchi bg-white text-tamagotchi-dark">🎨</button>
-                <!-- NEW: Zoom Slider --><input id="glazery-zoom-slider" type="range" class="zoom-slider">
-            </div>
+            <div id="cookie-rain-container" class="relative h-64 flex items-center justify-center overflow-hidden bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi glitch-static">
+                <div class="falling-snow"></div>
+                <canvas id="cookie-canvas"></canvas>
+                <button id="glaze-color-button" class="shadow-tamagotchi bg-white text-tamagotchi-dark">🎨</button>
+                <input id="glazery-zoom-slider" type="range" class="zoom-slider">
+            </div>
 
-            <div id="bottom-ticker" class="ticker-wrap" style="margin-top: 4px;">
-                <div class="ticker-move-reverse">
-                    <!-- UPDATED TEXT --><span>Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour. ... Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour. ... </span>
-                </div>
-            </div>
-            
-            <div class="bg-tamagotchi-card text-tamagotchi-dark p-2 rounded-tamagotchi-lg shadow-tamagotchi">
-                <div class="flex justify-between items-center">
-                    <div>
-                        <div class="text-xs font-semibold text-gray-600">Glaze Price</div>
-                        <div class="text-xl font-extrabold text-tamagotchi-dark">$23.23</div>
-                        <div class="text-xs text-gray-500">$400.00 available</div>
-                    </div>
-                    <button id="bakery-action-button" class="bg-tamagotchi-button-pink text-white py-2 px-6 rounded-tamagotchi-md text-sm font-bold active:opacity-80 disabled:opacity-50 shadow-tamagotchi">
-                        Glaze
-                    </button>
-                </div>
-            </div>
-        </div>
+            <div id="bottom-ticker" class="ticker-wrap" style="margin-top: 4px;">
+                <div class="ticker-move-reverse">
+                    <span>Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour. ... Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour. ... </span>
+                </div>
+            </div>
+            
+            <div class="bg-tamagotchi-card text-tamagotchi-dark p-2 rounded-tamagotchi-lg shadow-tamagotchi">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <div class="text-xs font-semibold text-gray-600">Glaze Price</div>
+                        <div class="text-xl font-extrabold text-tamagotchi-dark">$23.23</div>
+                        <div class="text-xs text-gray-500">$400.00 available</div>
+                    </div>
+                    <button id="bakery-action-button" class="bg-tamagotchi-button-pink text-white py-2 px-6 rounded-tamagotchi-md text-sm font-bold active:opacity-80 disabled:opacity-50 shadow-tamagotchi">
+                        Glaze
+                    </button>
+                </div>
+            </div>
+        </div>
 
-        <!-- =============================================================== --><!-- ABOUT VIEW (Restored)                                         --><!-- =============================================================== --><div id="view-about" class="hidden flex-grow flex flex-col space-y-3">
+        <div id="view-about" class="hidden flex-grow flex flex-col space-y-3">
 
-            <!-- UPDATED INFO TEXT --><div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-4 space-y-4 text-tamagotchi-dark">
-                <p class="font-bold text-lg" style="font-family: 'Comic Neue', cursive;">
-                    Hello and welcome to Donut Miner!
-                </p>
-                <p class="text-sm">
-                    Pay the Glaze Price to become <strong>King Glazer</strong> and earn <strong>100%</strong> of the $DONUT emissions until you are replaced.
-                </p>
-                <p class="text-sm">
-                    Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour.
-                </p>
-            </div>
-            <!-- END UPDATED INFO TEXT --><!-- NEW: Global Donut Stats --><h3 class="text-xl font-bold text-tamagotchi-pink-dark pt-2">Global Donut Stats</h3>
-            <div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-4 space-y-3 text-tamagotchi-dark">
-                
-                <div class="flex justify-between items-center">
-                    <span class="text-sm font-semibold text-gray-600">Total Donut Supply</span>
-                    <span id="about-total-supply" class="font-extrabold text-tamagotchi-dark">🍩 0</span>
-                </div>
-                
-                <div class="flex justify-between items-center">
-                    <span class="text-sm font-semibold text-gray-600">Total % Mined</span>
-                    <span id="about-percent-mined" class="font-extrabold text-tamagotchi-dark">0.00%</span>
-                </div>
+            <div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-4 space-y-4 text-tamagotchi-dark">
+                <p class="font-bold text-lg" style="font-family: 'Comic Neue', cursive;">
+                    Hello and welcome to Donut Miner!
+                </p>
+                <p class="text-sm">
+                    Pay the Glaze Price to become <strong>King Glazer</strong> and earn <strong>100%</strong> of the $DONUT emissions until you are replaced.
+                </p>
+                <p class="text-sm">
+                    Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour.
+                </p>
+            </div>
+            <h3 class="text-xl font-bold text-tamagotchi-pink-dark pt-2">Global Donut Stats</h3>
+            <div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-4 space-y-3 text-tamagotchi-dark">
+                
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-semibold text-gray-600">Total Donut Supply</span>
+                    <span id="about-total-supply" class="font-extrabold text-tamagotchi-dark">🍩 0</span>
+                </div>
+                
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-semibold text-gray-600">Total % Mined</span>
+                    <span id="about-percent-mined" class="font-extrabold text-tamagotchi-dark">0.00%</span>
+                </div>
 
-                <div class="flex justify-between items-center">
-                    <span class="text-sm font-semibold text-gray-600">Time Until Halving</span>
-                    <span id="about-next-halving" class="font-extrabold text-tamagotchi-dark">--:--:--</span>
-                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-semibold text-gray-600">Time Until Halving</span>
+                    <span id="about-next-halving" class="font-extrabold text-tamagotchi-dark">--:--:--</span>
+                </div>
 
-                <div class="flex justify-between items-center">
-                    <span class="text-sm font-semibold text-gray-600">Total Miners</span>
-                    <span id="about-total-miners" class="font-extrabold text-tamagotchi-dark">👤 0</span>
-                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-semibold text-gray-600">Total Miners</span>
+                    <span id="about-total-miners" class="font-extrabold text-tamagotchi-dark">👤 0</span>
+                </div>
 
-            </div>
-            <!-- END NEW SECTION --></div>
-        
-        <!-- BAKERY VIEW REMOVED --></main>
+            </div>
+            </div>
+        
+        </main>
 
-    <nav class="grid grid-cols-2 gap-2 p-1 border-t border-tamagotchi-subtle bg-tamagotchi-card shadow-lg max-w-lg mx-auto w-full"> <!-- Added max-w-lg mx-auto w-full --><button id="nav-glazery" class="nav-icon active flex flex-col items-center justify-center p-2 rounded-tamagotchi-md">
-            <span>🍩</span>
-        </button>
-        <button id="nav-about" class="nav-icon flex flex-col items-center justify-center p-2 rounded-tamagotchi-md">
-            <span>ℹ️</span>
-        </button>
-    </nav>
+    <nav class="grid grid-cols-2 gap-2 p-1 border-t border-tamagotchi-subtle bg-tamagotchi-card shadow-lg max-w-lg mx-auto w-full"> <button id="nav-glazery" class="nav-icon active flex flex-col items-center justify-center p-2 rounded-tamagotchi-md">
+            <span>🍩</span>
+        </button>
+        <button id="nav-about" class="nav-icon flex flex-col items-center justify-center p-2 rounded-tamagotchi-md">
+            <span>ℹ️</span>
+        </button>
+    </nav>
 
 <script>
-        document.addEventListener('DOMContentLoaded', () => {
-
-            // ===============================================================
-            // GAME STATE
-            // ===============================================================
-            
-            const state = {
-                // Player State
-                player: {
-                    cookies: 1000000,
-                    isBakerKing: false,
-                    claimableBakeryCookies: 0,
-                    totalBakedCookies: 0,
-                    glazeStartTime: null,
-                    totalGlazeTimeMs: 0, // NEW: Track total time
-                },
-                // Global Game State
-                global: {
-                    emissionRate: 10,
-                    totalCookiesCreated: 0,
-                    nextHalvingAt: 1000000,
-                    totalDonutSupply: 1000000000,
-                    totalMiners: 1234,
-                },
-                // UI State
-                ui: {
-                    activeView: 'glazery',
-                    isDarkMode: false,
-                    isSfxMuted: false
-                }
-            };
-
-            // ===============================================================
-            // DOM ELEMENTS
-            // ===============================================================
-            const dom = {
-                views: {
-                    glazery: document.getElementById('view-glazery'),
-                    about: document.getElementById('view-about'),
-                },
-                aboutPage: {
-                    totalSupply: document.getElementById('about-total-supply'),
-                    percentMined: document.getElementById('about-percent-mined'),
-                    nextHalving: document.getElementById('about-next-halving'),
-                    totalMiners: document.getElementById('about-total-miners'),
-                },
-                nav: {
-                    glazery: document.getElementById('nav-glazery'),
-                    about: document.getElementById('nav-about'),
-                },
-                glazery: {
-                    kingStatus: document.getElementById('bakery-king-status'),
-                    cps: document.getElementById('bakery-cps'),
-                    baked: document.getElementById('bakery-baked'),
-                    actionButton: document.getElementById('bakery-action-button'),
-                    canvas: document.getElementById('cookie-canvas'),
-                    rainContainer: document.getElementById('cookie-rain-container'),
-                    glazeColorButton: document.getElementById('glaze-color-button'),
-                    zoomSlider: document.getElementById('glazery-zoom-slider'),
-                    // NEW: Second row stats
-                    donutBalance: document.getElementById('player-donut-balance'),
-                    totalGlazeTime: document.getElementById('player-total-glaze-time'),
-                    percentMined: document.getElementById('player-percent-mined'),
-                },
-                musicToggleButton: document.getElementById('music-toggle-button'),
-                sfxToggleButton: document.getElementById('sfx-toggle-button'),
-                darkModeToggleButton: document.getElementById('dark-mode-toggle-button')
-            };
-
-            // ===============================================================
-            // HELPER FUNCTIONS
-            // ===============================================================
-
-            const format = (num) => Math.floor(num).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
-            const formatDecimal = (num) => num.toFixed(2);
-            
-            const formatGlazeTime = (ms) => {
-                if (ms === null || ms < 0) {
-                    return '00:00:00';
-                }
-                const totalSeconds = Math.floor(ms / 1000);
-                const hours = Math.floor(totalSeconds / 3600);
-                const minutes = Math.floor((totalSeconds % 3600) / 60);
-                const seconds = totalSeconds % 60;
-                
-                return [hours, minutes, seconds]
-                    .map(v => v.toString().padStart(2, '0'))
-                    .join(':');
-            };
-
-            // ===============================================================
-            // AUDIO SETUP (Tone.js)
-            // ===============================================================
-            let kick, hiHat, bass, melody;
-            let kickSequence, hiHatSequence, bassSequence, melodySequence;
-            let isMusicPlaying = false;
-            let isAudioInitialized = false;
-
-            let purchaseSound, cuteClickSound;
-
-            function initAudio() {
-                if (isAudioInitialized) return;
-
-                Tone.Transport.bpm.value = 140;
-                Tone.Transport.swing = 0.2;
-                Tone.Transport.swingSubdivision = '8n';
-                const limiter = new Tone.Limiter(-6).toDestination();
-
-                // 1. KICK DRUM
-                kick = new Tone.MembraneSynth({
-                    pitchDecay: 0.01,
-                    octaves: 6,
-                    oscillator: { type: 'sine' },
-                    envelope: { attack: 0.001, decay: 0.3, sustain: 0.01, release: 0.2 }
-                }).connect(limiter);
-                
-                const kickPattern = ['C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null];
-                
-                kickSequence = new Tone.Sequence((time, note) => {
-                    if (note) kick.triggerAttackRelease(note, '8n', time);
-                }, kickPattern, '8n');
-                kickSequence.loop = true;
-
-                // 2. HI-HAT
-                hiHat = new Tone.NoiseSynth({
-                    noise: { type: 'white' },
-                    envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 }
-                }).connect(limiter);
-
-                const hiHatPattern = [null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'GC5', null];
-
-                hiHatSequence = new Tone.Sequence((time, note) => {
-                    if (note) hiHat.triggerAttackRelease('8n', time);
-                }, hiHatPattern, '8n');
-                hiHatSequence.loop = true;
-
-                // 3. BASS LINE
-                bass = new Tone.MonoSynth({
-                    oscillator: { type: 'sawtooth' },
-                    filter: { Q: 2, type: 'lowpass', cutoff: 400 },
-                    envelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.5 }
-                }).connect(limiter);
-
-                const bassPattern = ['C2', null, 'G2', null, 'C2', null, 'G2', null, 'C2', null, 'G2', null, 'C2', null, 'G2', null, 'C2', null, 'G2', null, 'C2', null, 'G2', null, 'C2', null, 'G2', null, 'C2', null, 'G2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'F1', null, 'C2', null, 'F1', null, 'C2', null, 'F1', null, 'C2', null, 'F1', null, 'C2', null, 'F1', null, 'C2', null, 'F1', null, 'C2', null, 'F1', null, 'C2', null, 'F1', null, 'C2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', 'D2'];
-
-                bassSequence = new Tone.Sequence((time, note) => {
-                    if (note) bass.triggerAttackRelease(note, '8n', time);
-                }, bassPattern, '8n');
-                bassSequence.loop = true;
-
-                // 4. MELODY
-                melody = new Tone.FMSynth({
-                    harmonicity: 3,
-                    modulationIndex: 10,
-                    oscillator: { type: 'sine' },
-                    envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.5 }
-                }).connect(limiter);
-
-                const melodyPattern = ['G4', 'A#4', 'C5', null, 'G4', 'D#4', null, null, 'G4', 'A#4', 'C5', null, 'D#5', 'C5', 'A#4', null, 'G4', 'A#4', 'C5', null, 'G4', 'D#4', null, null, 'G4', 'A#4', 'G4', 'D#4', 'C4', null, null, null, 'G#4', 'C5', 'D#5', null, 'C5', 'G#4', null, null, 'G#4', 'C5', 'D#5', null, 'F5', 'D#5', 'C5', null, 'G#4', 'C5', 'D#5', null, 'C5', 'G#4', null, null, 'C5', 'A#4', 'G#4', 'F4', 'D#4', null, null, null, 'F4', 'G#4', 'C5', null, 'G#4', 'F4', null, null, 'F4', 'G#4', 'C5', null, 'D#5', 'C5', 'G#4', null, 'F4', 'G#4', 'C5', null, 'G#4', 'F4', null, null, 'F4', 'G#4', 'F4', 'D#4', 'C4', null, null, null, 'G4', 'B4', 'D5', null, 'D5', 'B4', 'G4', null, 'G4', 'B4', 'D5', 'F5', 'D5', 'B4', 'G4', null, 'A#4', null, 'B4', null, 'C5', null, 'B4', 'A#4', 'G4', 'F4', 'D#4', 'D4', 'C4', null, null, null];
-                
-                melodySequence = new Tone.Sequence((time, note) => {
-                    if (note) melody.triggerAttackRelease(note, '8n', time);
-                }, melodyPattern, '8n');
-                melodySequence.loop = true;
-
-                // Initialize SFX
-                cuteClickSound = new Tone.FMSynth({
-                    oscillator: { type: 'sine' },
-                    envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.1 },
-                    harmonicity: 0.5,
-                    modulationIndex: 2
-                }).connect(limiter);
-                
-                purchaseSound = new Tone.Synth({
-                    oscillator: { type: 'triangle' },
-                    envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.2 }
-                }).connect(limiter);
-
-                isAudioInitialized = true;
-            }
-
-            function playSoundEffect(sound, ...args) {
-                if (state.ui.isSfxMuted) return;
-
-                if (Tone.context.state !== 'running') {
-                    Tone.start();
-                }
-                
-                if (!isAudioInitialized) {
-                    initAudio();
-                }
-                
-                if (!state.ui.isSfxMuted) {
-                    if (sound === 'crunch') {
-                        cuteClickSound.triggerAttackRelease('C6', '32n', Tone.now());
-                    }
-                    if (sound === 'purchase') {
-                        purchaseSound.triggerAttackRelease('C5', '16n', Tone.now());
-                        purchaseSound.triggerAttackRelease('E5', '16n', Tone.now() + 0.05);
-                        purchaseSound.triggerAttackRelease('G5', '16n', Tone.now() + 0.1);
-                    }
-                }
-            }
-            
-            function toggleSfx() {
-                state.ui.isSfxMuted = !state.ui.isSfxMuted;
-                dom.sfxToggleButton.textContent = state.ui.isSfxMuted ? '🔇' : '🔊';
-
-                if (!state.ui.isSfxMuted) {
-                    playSoundEffect('crunch');
-                }
-            }
-
-            function toggleMusic() {
-                if (Tone.context.state !== 'running') {
-                    Tone.start();
-                }
-
-                if (!isAudioInitialized) {
-                    initAudio();
-                }
-
-                if (isMusicPlaying) {
-                    // NEW: Only stop the Transport. This stops all events
-                    // and resets the Transport time to 0.
-                    Tone.Transport.stop();
-                    
-                    /* REMOVED: Explicitly stopping sequences caused errors 
-                       and issues restarting.
-                    if (kickSequence) kickSequence.stop();
-                    if (hiHatSequence) hiHatSequence.stop();
-                    if (bassSequence) bassSequence.stop();
-                    if (melodySequence) melodySequence.stop();
-                    */
-                    
-                    dom.musicToggleButton.textContent = '🔇';
-                } else {
-                    Tone.Transport.start();
-                    
-                    // NEW: Check if sequences are 'stopped' before starting them.
-                    // This ensures they start on the first play, and also
-                    // restart correctly after being stopped by the Transport.
-                    if (kickSequence && kickSequence.state === 'stopped') {
-                         kickSequence.start(0);
-                    }
-                    if (hiHatSequence && hiHatSequence.state === 'stopped') {
-                         hiHatSequence.start(0);
-                    }
-                    if (bassSequence && bassSequence.state === 'stopped') {
-                         bassSequence.start(0);
-                    }
-                    if (melodySequence && melodySequence.state === 'stopped') {
-                         melodySequence.start(0);
-                    }
-
-                    dom.musicToggleButton.textContent = '🎵';
-                }
-                isMusicPlaying = !isMusicPlaying;
-            }
-
-            // ===============================================================
-            // DARK MODE TOGGLE (NEW)
-            // ===============================================================
-            function toggleDarkMode() {
-                state.ui.isDarkMode = !state.ui.isDarkMode;
-                const body = document.body; // Changed from appShell to body
-                if (state.ui.isDarkMode) {
-                    body.classList.add('dark');
-                    dom.darkModeToggleButton.textContent = '☀️';
-                } else {
-                    body.classList.remove('dark');
-                    dom.darkModeToggleButton.textContent = '🌙';
-                }
-            }
-
-            // ===============================================================
-            // 3D GLAZERY SETUP
-            // ===============================================================
-
-            let scene, camera, renderer, donutGroup, glazeMaterial;
-            let isDragging = false;
-            let previousPointerX = 0;
-            let previousPointerY = 0;
-            let initialPinchDistance = 0;
-            let currentCameraZ = 10;
-            let isThreeJSInitialized = false; 
-            let donutSpinSpeed = 0.005; // NEW: Control variable for spin speed
-
-            const MIN_ZOOM_Z = 3;
-            const MAX_ZOOM_Z = 20;
-
-            const glazeColors = [
-                0xFFC0CB, // Original Pink
-                0xADD8E6, // Light Blue
-                0x90EE90, // Light Green
-                0xFFD700, // Gold (Yellow)
-                0x800080, // Purple
-                0xFFF8DC, // Cream
-                0xFF0000, // Red
-                0x000000  // Black
-            ];
-            let currentGlazeColorIndex = 0;
-
-            function createCrackTexture(size = 1024) {
-                const canvas = document.createElement('canvas');
-                canvas.width = size;
-                canvas.height = size;
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = 'white';
-                ctx.fillRect(0, 0, size, size);
-
-                ctx.strokeStyle = '#333333';
-                ctx.lineWidth = 3;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                
-                for (let i = 0; i < 15; i++) {
-                    ctx.beginPath();
-                    let startX = Math.random() * size;
-                    let startY = Math.random() * size;
-                    ctx.moveTo(startX, startY);
-                    let len = Math.random() * 60 + 30;
-                    let currentX = startX;
-                    let currentY = startY;
-                    for (let j = 0; j < 5; j++) {
-                         currentX += (Math.random() - 0.5) * len;
-                         currentY += (Math.random() - 0.5) * len;
-                         currentX = Math.max(0, Math.min(size, currentX));
-                         currentY = Math.max(0, Math.min(size, currentY));
-                        ctx.lineTo(currentX, currentY);
-                        len *= 0.8;
-                    }
-                    ctx.stroke();
-                }
-
-                return new THREE.CanvasTexture(canvas);
-            }
-
-            function createSpeckleTexture(size = 512, color = 'rgba(0,0,0,0.5)') {
-                const canvas = document.createElement('canvas');
-                canvas.width = size;
-                canvas.height = size;
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#FFFFFF'; 
-                ctx.fillRect(0, 0, size, size);
-
-                for (let i = 0; i < 2000; i++) {
-                    const x = Math.random() * size;
-                    const y = Math.random() * size;
-                    const r = Math.random() * 0.8 + 0.4;
-                    const alpha = Math.random() * 0.5 + 0.3;
-                    const shade = Math.floor(Math.random() * 40);
-                    ctx.fillStyle = `rgba(${shade}, ${shade}, ${shade}, ${alpha})`; 
-                    
-                    ctx.beginPath();
-                    ctx.arc(x, y, r, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-
-                return new THREE.CanvasTexture(canvas);
-            }
-
-            function initThreeJS() {
-                if (isThreeJSInitialized) return; 
-                
-                scene = new THREE.Scene();
-                
-                const container = dom.glazery.rainContainer;
-                if (!container) return;
-                const w = container.clientWidth || 300;
-                const h = container.clientHeight || 300;
-
-                camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
-                camera.position.z = currentCameraZ;
-
-                if (!dom.glazery.canvas) return;
-                renderer = new THREE.WebGLRenderer({ 
-                    canvas: dom.glazery.canvas,
-                    alpha: true
-                });
-                renderer.setSize(w, h);
-                renderer.setPixelRatio(window.devicePixelRatio);
-
-                const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-                scene.add(ambientLight);
-                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7); 
-                directionalLight.position.set(5, 5, 5);
-                scene.add(directionalLight);
-
-                donutGroup = new THREE.Group();
-                
-                // Donut Base
-                const donutGeometry = new THREE.TorusGeometry(2.8, 1.3, 32, 100);
-
-                const crackTexture = createCrackTexture(1024);
-                crackTexture.wrapS = crackTexture.wrapT = THREE.RepeatWrapping;
-                crackTexture.repeat.set(1, 1);
-                
-                const speckleTexture = createSpeckleTexture(512);
-                speckleTexture.wrapS = speckleTexture.wrapT = THREE.RepeatWrapping;
-                speckleTexture.repeat.set(3, 3);
-
-                const donutMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x5C3317,
-                    roughness: 0.8,
-                    metalness: 0.05,
-                    map: speckleTexture,
-                    bumpMap: crackTexture,
-                    bumpScale: 0.08
-                });
-                const donutBase = new THREE.Mesh(donutGeometry, donutMaterial);
-                donutGroup.add(donutBase);
-
-                // Glaze Layer
-                const glazeRadius = 2.75; 
-                const glazeTubeRadius = 1.35; 
-                const radialSegments = 32; 
-                const tubularSegments = 100;
-
-                const glazeGeometry = new THREE.TorusGeometry(
-                    glazeRadius,
-                    glazeTubeRadius,
-                    radialSegments,
-                    tubularSegments
-                );
-                
-                const positionAttribute = glazeGeometry.attributes.position;
-                const tempVector = new THREE.Vector3();
-                const irregularityFactor = 0.15; 
-                const randomOffsets = new Array(tubularSegments).fill(0).map(() => Math.random() * irregularityFactor * 2 - irregularityFactor);
-
-                for (let i = 0; i < positionAttribute.count; i++) {
-                    tempVector.fromBufferAttribute(positionAttribute, i);
-
-                    const x = tempVector.x;
-                    const y = tempVector.y;
-                    const z = tempVector.z;
-                    const r = Math.sqrt(x * x + y * y);
-                    const angleAroundDonut = Math.atan2(y, x); 
-                    const distFromGlazeMainRadius = Math.abs(r - glazeRadius);
-                    const isOuterEdge = distFromGlazeMainRadius < (glazeTubeRadius * 0.4) && r > glazeRadius; 
-                    const isBottomHalf = z < -0.4 * glazeTubeRadius; 
-                    const isInnerEdge = distFromGlazeMainRadius < (glazeTubeRadius * 0.4) && r < glazeRadius;
-
-                    if (isOuterEdge && isBottomHalf) {
-                        const segmentIndex = Math.floor((angleAroundDonut / (2 * Math.PI)) * tubularSegments + tubularSegments) % tubularSegments;
-                        const scallopMagnitude = 0.1 + (randomOffsets[segmentIndex] * 0.8 + 0.5) * 0.1; 
-                        const currentRadius = Math.sqrt(tempVector.x * tempVector.x + tempVector.y * tempVector.y);
-                        const normalizedX = tempVector.x / currentRadius;
-                        const normalizedY = tempVector.y / currentRadius;
-
-                        tempVector.x += normalizedX * scallopMagnitude;
-                        tempVector.y += normalizedY * scallopMagnitude;
-                        tempVector.z += scallopMagnitude * 0.5; 
-                        positionAttribute.setXYZ(i, tempVector.x, tempVector.y, tempVector.z);
-                    } else if (isInnerEdge) {
-                        if (tempVector.z < -0.1) { 
-                           tempVector.z = Math.min(tempVector.z + 0.1, 0); 
-                        }
-                        positionAttribute.setXYZ(i, tempVector.x, tempVector.y, tempVector.z);
-                    }
-                }
-                glazeGeometry.attributes.position.needsUpdate = true;
-                glazeGeometry.computeVertexNormals(); 
-
-                glazeMaterial = new THREE.MeshStandardMaterial({
-                    color: glazeColors[currentGlazeColorIndex],
-                    roughness: 0.2,  
-                    metalness: 0.1,  
-                    transparent: true,
-                    opacity: 0.85    
-                });
-                const glaze = new THREE.Mesh(glazeGeometry, glazeMaterial);
-                glaze.position.z = 0.05; 
-                donutGroup.add(glaze);
-
-                // Sprinkles
-                const sprinkleColors = [0xFF0000, 0xFF7F00, 0xFFFF00, 0x00FF00, 0x0000FF, 0x4B0082, 0x9400D3];
-                const sprinkleShape = new THREE.CylinderGeometry(0.06, 0.06, 0.4, 8); 
-                const numSprinkles = 800; 
-                const R_sprinkle = 2.8; 
-                const r_sprinkle = 1.3 * 0.9; 
-
-                for (let i = 0; i < numSprinkles; i++) {
-                    const color = sprinkleColors[Math.floor(Math.random() * sprinkleColors.length)];
-                    const sprinkleMaterial = new THREE.MeshStandardMaterial({ color: color });
-                    const sprinkle = new THREE.Mesh(sprinkleShape, sprinkleMaterial);
-                    const u = Math.random() * 2 * Math.PI; 
-                    const v = Math.random() * 2 * Math.PI; 
-                    
-                    sprinkle.position.x = (R_sprinkle + r_sprinkle * Math.cos(u)) * Math.cos(v);
-                    sprinkle.position.y = (R_sprinkle + r_sprinkle * Math.cos(u)) * Math.sin(v);
-                    sprinkle.position.z = r_sprinkle * Math.sin(u);
-
-                    if (sprinkle.position.z < -0.2 * 1.3) { 
-                        continue; 
-                    }
-
-                    const centerOfTubeCrossSection = new THREE.Vector3(R_sprinkle * Math.cos(v), R_sprinkle * Math.sin(v), 0);
-                    const normal = new THREE.Vector3().subVectors(sprinkle.position, centerOfTubeCrossSection).normalize();
-                    sprinkle.position.addScaledVector(normal, 0.12); 
-                    sprinkle.lookAt(new THREE.Vector3().addVectors(sprinkle.position, normal));
-                    sprinkle.rotateX(Math.PI / 2); 
-                    sprinkle.rotation.z += Math.random() * Math.PI; 
-                    donutGroup.add(sprinkle);
-                }
-                
-                scene.add(donutGroup);
-
-                // Add pointer listeners for Glazery
-                dom.glazery.canvas.addEventListener('pointerdown', onPointerDown);
-                dom.glazery.canvas.addEventListener('pointermove', onPointerMove);
-                dom.glazery.canvas.addEventListener('pointerup', onPointerUp);
-                dom.glazery.canvas.addEventListener('pointerleave', onPointerUp);
-                dom.glazery.canvas.addEventListener('wheel', onMouseWheel, { passive: false });
-                
-                // Setup zoom slider
-                dom.glazery.zoomSlider.min = MIN_ZOOM_Z;
-                dom.glazery.zoomSlider.max = MAX_ZOOM_Z;
-                dom.glazery.zoomSlider.value = currentCameraZ;
-                dom.glazery.zoomSlider.step = 0.1;
-
-                isThreeJSInitialized = true; 
-            }
-
-            // ===============================================================
-            // UNIVERSAL 3D CONTROLS & ANIMATION
-            // ===============================================================
-
-            function onResize() {
-                // Resize Glazery Canvas
-                if (renderer && camera && dom.glazery.rainContainer) {
-                    const container = dom.glazery.rainContainer;
-                    const w = container.clientWidth;
-                    const h = container.clientHeight;
-                    if (w > 0 && h > 0) {
-                        camera.aspect = w / h;
-                        camera.updateProjectionMatrix();
-                        renderer.setSize(w, h);
-                    }
-                }
-            }
-            window.addEventListener('resize', onResize);
-
-            function animate() {
-                requestAnimationFrame(animate);
-                
-                // Render Glazery if active
-                if (state.ui.activeView === 'glazery' && donutGroup && renderer) {
-                    // MODIFIED: Always spin based on donutSpinSpeed, remove isDragging check
-                    donutGroup.rotation.y += donutSpinSpeed; 
-                    
-                    // NEW: Add damping/friction to slow the spin down
-                    if (donutSpinSpeed > 0.005) {
-                        donutSpinSpeed *= 0.95; // Apply friction
-                        // If it gets very close to the base speed, clamp it
-                        if (donutSpinSpeed < 0.006) {
-                            donutSpinSpeed = 0.005;
-                        }
-                    }
-                    
-                    renderer.render(scene, camera);
-                }
-            }
-
-            // --- Glazery (Donut) Pointer Events ---
-            let pointers = [];
-
-            function getPinchDistance(e) {
-                if (e.touches && e.touches.length === 2) {
-                    const dx = e.touches[0].clientX - e.touches[1].clientX;
-                    const dy = e.touches[0].clientY - e.touches[1].clientY;
-                    return Math.sqrt(dx * dx + dy * dy);
-                }
-                return 0;
-            }
-
-            function onPointerDown(e) {
-                pointers.push(e);
-                if (pointers.length === 1) {
-                    isDragging = true;
-                    previousPointerX = e.clientX;
-                    previousPointerY = e.clientY;
-                } else if (pointers.length === 2) {
-                    isDragging = false;
-                    initialPinchDistance = getPinchDistance(e);
-                }
-                dom.glazery.canvas.setPointerCapture(e.pointerId);
-            }
-
-            function onPointerMove(e) {
-                const index = pointers.findIndex(p => p.pointerId === e.pointerId);
-                if (index > -1) {
-                    pointers[index] = e;
-                }
-
-                if (pointers.length === 2 && initialPinchDistance > 0) {
-                    const currentPinchDistance = getPinchDistance(e);
-                    if (currentPinchDistance === 0) return;
-                    
-                    const zoomFactor = initialPinchDistance / currentPinchDistance;
-                    let newZ = currentCameraZ * zoomFactor;
-                    
-                    newZ = Math.max(MIN_ZOOM_Z, Math.min(MAX_ZOOM_Z, newZ));
-                    camera.position.z = newZ;
-                    camera.updateProjectionMatrix();
-                    dom.glazery.zoomSlider.value = newZ;
-
-                    initialPinchDistance = currentPinchDistance;
-                    currentCameraZ = newZ;
-
-                } else if (isDragging && pointers.length === 1) {
-                    const deltaX = e.clientX - previousPointerX;
-                    const deltaY = e.clientY - previousPointerY;
-                    
-                    donutGroup.rotation.y += deltaX * 0.01;
-                    donutGroup.rotation.x += deltaY * 0.01;
-                    
-                    previousPointerX = e.clientX;
-                    previousPointerY = e.clientY;
-                }
-            }
-
-            function onPointerUp(e) {
-                pointers = pointers.filter(p => p.pointerId !== e.pointerId);
-                dom.glazery.canvas.releasePointerCapture(e.pointerId);
-
-                if (isDragging && pointers.length === 0) {
-                    const deltaX = Math.abs(e.clientX - previousPointerX);
-                    const deltaY = Math.abs(e.clientY - previousPointerY);
-
-                    if(deltaX < 5 && deltaY < 5) {
-                        // handleMinerAction(); // <-- REMOVED
-                        
-                        // REMOVED visual pop effect
-                        /* donutGroup.scale.set(1.1, 1.1, 1.1);
-                        setTimeout(() => {
-                            donutGroup.scale.set(1, 1, 1);
-                        }, 100);
-                        */
-                    }
-                    isDragging = false;
-                }
-
-                if (pointers.length < 2) {
-                    initialPinchDistance = 0;
-                }
-            }
-
-            function onMouseWheel(e) {
-                e.preventDefault();
-                let newZ = currentCameraZ + e.deltaY * 0.02;
-                newZ = Math.max(MIN_ZOOM_Z, Math.min(MAX_ZOOM_Z, newZ));
-                camera.position.z = newZ;
-                camera.updateProjectionMatrix();
-                dom.glazery.zoomSlider.value = newZ;
-                currentCameraZ = newZ;
-            }
-
-            function changeGlazeColor() {
-                if (glazeMaterial) {
-                    currentGlazeColorIndex = (currentGlazeColorIndex + 1) % glazeColors.length;
-                    glazeMaterial.color.set(glazeColors[currentGlazeColorIndex]);
-                }
-            }
-
-
-            // ===============================================================
-            // RENDER/UPDATE FUNCTIONS
-            // ===============================================================
-
-            const updateUI = () => {
-                // NEW: Calculate percentMined globally for both views
-                const { totalDonutSupply, totalCookiesCreated, nextHalvingAt, totalMiners } = state.global;
-                const percentMined = totalDonutSupply > 0 ? (totalCookiesCreated / totalDonutSupply) * 100 : 0;
-
-                // Update Glazery View (always, since it's the main view)
-                
-                // NEW: Update second row of stats
-                dom.glazery.donutBalance.textContent = '🍩 ' + format(state.player.cookies);
-                dom.glazery.totalGlazeTime.textContent = formatGlazeTime(state.player.totalGlazeTimeMs);
-                dom.glazery.percentMined.textContent = formatDecimal(percentMined);
-
-                // --- Update first row of stats ---
-                const bakeryCps = state.player.isBakerKing ? state.global.emissionRate : 0; 
-                dom.glazery.cps.textContent = formatDecimal(bakeryCps);
-                
-                if (state.player.isBakerKing && state.player.glazeStartTime) {
-                    const elapsedMs = Date.now() - state.player.glazeStartTime;
-                    dom.glazery.baked.textContent = formatGlazeTime(elapsedMs);
-                } else {
-                    dom.glazery.baked.textContent = '00:00:00';
-                }
-                
-                const claimableBakery = Math.floor(state.player.claimableBakeryCookies);
-                if (state.player.isBakerKing) {
-                    dom.glazery.kingStatus.textContent = 'You';
-                    dom.glazery.actionButton.textContent = `Bake ${format(claimableBakery)}`;
-                    dom.glazery.actionButton.disabled = claimableBakery < 1;
-                } else {
-                    dom.glazery.kingStatus.textContent = 'None';
-                    dom.glazery.actionButton.textContent = 'Glaze';
-                    dom.glazery.actionButton.disabled = false;
-                }
-                
-                // Update About Page Stats
-                if (state.ui.activeView === 'about') {
-                    // const { totalDonutSupply, totalCookiesCreated, nextHalvingAt, totalMiners } = state.global; // MOVED UP
-                    
-                    dom.aboutPage.totalSupply.textContent = `🍩 ${format(totalDonutSupply)}`;
-                    
-                    // const percentMined = totalDonutSupply > 0 ? (totalCookiesCreated / totalDonutSupply) * 100 : 0; // MOVED UP
-                    dom.aboutPage.percentMined.textContent = `${formatDecimal(percentMined)}%`;
-
-                    const blocksRemaining = nextHalvingAt - totalCookiesCreated;
-                    const secondsRemaining = Math.max(0, Math.floor(blocksRemaining * (GAME_TICK_MS / 100))); 
-                    const hours = Math.floor(secondsRemaining / 3600);
-                    const minutes = Math.floor((secondsRemaining % 3600) / 60);
-                    const seconds = secondsRemaining % 60;
-                    dom.aboutPage.nextHalving.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-                    dom.aboutPage.totalMiners.textContent = `👤 ${format(totalMiners)}`;
-                }
-            };
-            
-
-            const showView = (viewName) => {
-                // Hide all views
-                for (const key in dom.views) {
-                    dom.views[key].classList.add('hidden');
-                }
-                // Deactivate all nav icons
-                for (const key in dom.nav) {
-                    dom.nav[key].classList.remove('active');
-                }
-
-                // Show selected view
-                if (dom.views[viewName]) {
-                    dom.views[viewName].classList.remove('hidden');
-                    state.ui.activeView = viewName;
-                }
-                // Activate selected nav icon
-                if (dom.nav[viewName]) {
-                    dom.nav[viewName].classList.add('active');
-                }
-                
-                if (viewName === 'glazery' && !isThreeJSInitialized) {
-                    setTimeout(initThreeJS, 0);
-                }
-
-                updateUI();
-                
-                setTimeout(onResize, 50);
-            };
-
-            // ===============================================================
-            // GAME ACTIONS (NEW SECTION)
-            // ===============================================================
-
-            const handleMinerAction = () => {
-                donutSpinSpeed = 0.5; // NEW: Set spin speed to high!
-
-                if (state.player.isBakerKing) {
-                    // Claim "Bake"
-                    const claimable = Math.floor(state.player.claimableBakeryCookies);
-                    if (claimable > 0) {
-                        playSoundEffect('purchase');
-                        state.player.cookies += claimable;
-                        state.player.totalBakedCookies += claimable;
-                        state.player.claimableBakeryCookies = 0;
-                        console.log(`Claimed ${claimable} cookies.`);
-                    }
-                } else {
-                    // Become "Glazer" (King)
-                    playSoundEffect('purchase');
-                    state.player.isBakerKing = true;
-                    state.player.glazeStartTime = Date.now();
-                    console.log("You are now the King Glazer!");
-                }
-                
-                updateUI();
-            };
-
-            // ===============================================================
-            // GAME LOOP
-            // ===============================================================
-            
-            const GAME_TICK_MS = 100;
-
-            const gameLoop = () => {
-                // MOCK: Increment total mined cookies for countdown demo
-                state.global.totalCookiesCreated += state.global.emissionRate * (GAME_TICK_MS / 1000);
-                
-                // MOCK: Increment claimable cookies if king
-                if (state.player.isBakerKing) {
-                    const bakeryCps = state.global.emissionRate;
-                    state.player.claimableBakeryCookies += bakeryCps * (GAME_TICK_MS / 1000);
-                    state.player.totalGlazeTimeMs += GAME_TICK_MS; // NEW: Increment total glaze time
-                }
-                
-                updateUI();
-            };
-
-            // ===============================================================
-            // INITIALIZATION
-            // ===============================================================
-            
-            dom.nav.glazery.onclick = () => { playSoundEffect('crunch'); showView('glazery'); };
-            dom.nav.about.onclick = () => { playSoundEffect('crunch'); showView('about'); };
-
-            dom.glazery.actionButton.onclick = handleMinerAction;
-            dom.musicToggleButton.onclick = toggleMusic;
-            dom.sfxToggleButton.onclick = toggleSfx;
-            dom.darkModeToggleButton.onclick = () => {
-                playSoundEffect('crunch');
-                toggleDarkMode();
-            };
-            dom.glazery.glazeColorButton.onclick = () => {
-                playSoundEffect('crunch');
-                changeGlazeColor();
-            };
-
-            dom.glazery.zoomSlider.oninput = () => {
-                if (!isThreeJSInitialized) return;
-                const newZ = parseFloat(dom.glazery.zoomSlider.value);
-                camera.position.z = newZ;
-                camera.updateProjectionMatrix();
-                currentCameraZ = newZ;
-            };
-
-            showView('glazery');
-            setInterval(gameLoop, GAME_TICK_MS);
-            
-            if (!isThreeJSInitialized) {
-                setTimeout(initThreeJS, 0); 
-            }
-            
-            animate();
-        });
-    </script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // ===============================================================
+            // CONFIGURATION
+            // ===============================================================
+
+            // !!! IMPORTANT: REPLACE 'https://last-game-kappa.vercel.app' WITH YOUR ACTUAL APP DOMAIN !!!
+            const PUBLIC_URL = 'https://last-game-kappa.vercel.app'; 
+            const GLAZE_FRAME_URL = `${PUBLIC_URL}/api/payment-frame`; 
+            // The transaction will be redirected to the payment frame endpoint, which handles the transaction,
+            // then redirects back to this game URL on success.
+
+            // ===============================================================
+            // GAME STATE
+            // ===============================================================
+            
+            const state = {
+                // Player State
+                player: {
+                    cookies: 1000000,
+                    isBakerKing: false,
+                    claimableBakeryCookies: 0,
+                    totalBakedCookies: 0,
+                    glazeStartTime: null,
+                    totalGlazeTimeMs: 0, // NEW: Track total time
+                },
+                // Global Game State
+                global: {
+                    emissionRate: 10,
+                    totalCookiesCreated: 0,
+                    nextHalvingAt: 1000000,
+                    totalDonutSupply: 1000000000,
+                    totalMiners: 1234,
+                },
+                // UI State
+                ui: {
+                    activeView: 'glazery',
+                    isDarkMode: false,
+                    isSfxMuted: false
+                }
+            };
+
+            // ===============================================================
+            // DOM ELEMENTS
+            // ===============================================================
+            const dom = {
+                views: {
+                    glazery: document.getElementById('view-glazery'),
+                    about: document.getElementById('view-about'),
+                },
+                aboutPage: {
+                    totalSupply: document.getElementById('about-total-supply'),
+                    percentMined: document.getElementById('about-percent-mined'),
+                    nextHalving: document.getElementById('about-next-halving'),
+                    totalMiners: document.getElementById('about-total-miners'),
+                },
+                nav: {
+                    glazery: document.getElementById('nav-glazery'),
+                    about: document.getElementById('nav-about'),
+                },
+                glazery: {
+                    kingStatus: document.getElementById('bakery-king-status'),
+                    cps: document.getElementById('bakery-cps'),
+                    baked: document.getElementById('bakery-baked'),
+                    actionButton: document.getElementById('bakery-action-button'),
+                    canvas: document.getElementById('cookie-canvas'),
+                    rainContainer: document.getElementById('cookie-rain-container'),
+                    glazeColorButton: document.getElementById('glaze-color-button'),
+                    zoomSlider: document.getElementById('glazery-zoom-slider'),
+                    // NEW: Second row stats
+                    donutBalance: document.getElementById('player-donut-balance'),
+                    totalGlazeTime: document.getElementById('player-total-glaze-time'),
+                    percentMined: document.getElementById('player-percent-mined'),
+                },
+                musicToggleButton: document.getElementById('music-toggle-button'),
+                sfxToggleButton: document.getElementById('sfx-toggle-button'),
+                darkModeToggleButton: document.getElementById('dark-mode-toggle-button')
+            };
+
+            // ===============================================================
+            // HELPER FUNCTIONS
+            // ===============================================================
+
+            const format = (num) => Math.floor(num).toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+            const formatDecimal = (num) => num.toFixed(2);
+            
+            const formatGlazeTime = (ms) => {
+                if (ms === null || ms < 0) {
+                    return '00:00:00';
+                }
+                const totalSeconds = Math.floor(ms / 1000);
+                const hours = Math.floor(totalSeconds / 3600);
+                const minutes = Math.floor((totalSeconds % 3600) / 60);
+                const seconds = totalSeconds % 60;
+                
+                return [hours, minutes, seconds]
+                    .map(v => v.toString().padStart(2, '0'))
+                    .join(':');
+            };
+
+            // ===============================================================
+            // AUDIO SETUP (Tone.js)
+            // ===============================================================
+            let kick, hiHat, bass, melody;
+            let kickSequence, hiHatSequence, bassSequence, melodySequence;
+            let isMusicPlaying = false;
+            let isAudioInitialized = false;
+
+            let purchaseSound, cuteClickSound;
+
+            function initAudio() {
+                if (isAudioInitialized) return;
+
+                Tone.Transport.bpm.value = 140;
+                Tone.Transport.swing = 0.2;
+                Tone.Transport.swingSubdivision = '8n';
+                const limiter = new Tone.Limiter(-6).toDestination();
+
+                // 1. KICK DRUM
+                kick = new Tone.MembraneSynth({
+                    pitchDecay: 0.01,
+                    octaves: 6,
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.001, decay: 0.3, sustain: 0.01, release: 0.2 }
+                }).connect(limiter);
+                
+                const kickPattern = ['C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null, 'C2', null, null, null];
+                
+                kickSequence = new Tone.Sequence((time, note) => {
+                    if (note) kick.triggerAttackRelease(note, '8n', time);
+                }, kickPattern, '8n');
+                kickSequence.loop = true;
+
+                // 2. HI-HAT
+                hiHat = new Tone.NoiseSynth({
+                    noise: { type: 'white' },
+                    envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.05 }
+                }).connect(limiter);
+
+                const hiHatPattern = [null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'G5', null, null, null, 'GC5', null];
+
+                hiHatSequence = new Tone.Sequence((time, note) => {
+                    if (note) hiHat.triggerAttackRelease('8n', time);
+                }, hiHatPattern, '8n');
+                hiHatSequence.loop = true;
+
+                // 3. BASS LINE
+                bass = new Tone.MonoSynth({
+                    oscillator: { type: 'sawtooth' },
+                    filter: { Q: 2, type: 'lowpass', cutoff: 400 },
+                    envelope: { attack: 0.01, decay: 0.2, sustain: 0.3, release: 0.5 }
+                }).connect(limiter);
+
+                const bassPattern = ['C2', null, 'G2', null, 'C2', null, 'G2', null, 'C2', null, 'G2', null, 'C2', null, 'G2', null, 'C2', null, 'G2', null, 'C2', null, 'G2', null, 'C2', null, 'G2', null, 'C2', null, 'G2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'G#1', null, 'D#2', null, 'F1', null, 'C2', null, 'F1', null, 'C2', null, 'F1', null, 'C2', null, 'F1', null, 'C2', null, 'F1', null, 'C2', null, 'F1', null, 'C2', null, 'F1', null, 'C2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', null, 'G1', null, 'D2', 'D2'];
+
+                bassSequence = new Tone.Sequence((time, note) => {
+                    if (note) bass.triggerAttackRelease(note, '8n', time);
+                }, bassPattern, '8n');
+                bassSequence.loop = true;
+
+                // 4. MELODY
+                melody = new Tone.FMSynth({
+                    harmonicity: 3,
+                    modulationIndex: 10,
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.01, decay: 0.2, sustain: 0.1, release: 0.5 }
+                }).connect(limiter);
+
+                const melodyPattern = ['G4', 'A#4', 'C5', null, 'G4', 'D#4', null, null, 'G4', 'A#4', 'C5', null, 'D#5', 'C5', 'A#4', null, 'G4', 'A#4', 'C5', null, 'G4', 'D#4', null, null, 'G4', 'A#4', 'G4', 'D#4', 'C4', null, null, null, 'G#4', 'C5', 'D#5', null, 'C5', 'G#4', null, null, 'G#4', 'C5', 'D#5', null, 'F5', 'D#5', 'C5', null, 'G#4', 'C5', 'D#5', null, 'C5', 'G#4', null, null, 'C5', 'A#4', 'G#4', 'F4', 'D#4', null, null, null, 'F4', 'G#4', 'C5', null, 'G#4', 'F4', null, null, 'F4', 'G#4', 'C5', null, 'D#5', 'C5', 'G#4', null, 'F4', 'G#4', 'C5', null, 'G#4', 'F4', null, null, 'F4', 'G#4', 'F4', 'D#4', 'C4', null, null, null, 'G4', 'B4', 'D5', null, 'D5', 'B4', 'G4', null, 'G4', 'B4', 'D5', 'F5', 'D5', 'B4', 'G4', null, 'A#4', null, 'B4', null, 'C5', null, 'B4', 'A#4', 'G4', 'F4', 'D#4', 'D4', 'C4', null, null, null];
+                
+                melodySequence = new Tone.Sequence((time, note) => {
+                    if (note) melody.triggerAttackRelease(note, '8n', time);
+                }, melodyPattern, '8n');
+                melodySequence.loop = true;
+
+                // Initialize SFX
+                cuteClickSound = new Tone.FMSynth({
+                    oscillator: { type: 'sine' },
+                    envelope: { attack: 0.001, decay: 0.05, sustain: 0, release: 0.1 },
+                    harmonicity: 0.5,
+                    modulationIndex: 2
+                }).connect(limiter);
+                
+                purchaseSound = new Tone.Synth({
+                    oscillator: { type: 'triangle' },
+                    envelope: { attack: 0.01, decay: 0.1, sustain: 0.1, release: 0.2 }
+                }).connect(limiter);
+
+                isAudioInitialized = true;
+            }
+
+            function playSoundEffect(sound, ...args) {
+                if (state.ui.isSfxMuted) return;
+
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+                
+                if (!isAudioInitialized) {
+                    initAudio();
+                }
+                
+                if (!state.ui.isSfxMuted) {
+                    if (sound === 'crunch') {
+                        cuteClickSound.triggerAttackRelease('C6', '32n', Tone.now());
+                    }
+                    if (sound === 'purchase') {
+                        purchaseSound.triggerAttackRelease('C5', '16n', Tone.now());
+                        purchaseSound.triggerAttackRelease('E5', '16n', Tone.now() + 0.05);
+                        purchaseSound.triggerAttackRelease('G5', '16n', Tone.now() + 0.1);
+                    }
+                }
+            }
+            
+            function toggleSfx() {
+                state.ui.isSfxMuted = !state.ui.isSfxMuted;
+                dom.sfxToggleButton.textContent = state.ui.isSfxMuted ? '🔇' : '🔊';
+
+                if (!state.ui.isSfxMuted) {
+                    playSoundEffect('crunch');
+                }
+            }
+
+            function toggleMusic() {
+                if (Tone.context.state !== 'running') {
+                    Tone.start();
+                }
+
+                if (!isAudioInitialized) {
+                    initAudio();
+                }
+
+                if (isMusicPlaying) {
+                    // NEW: Only stop the Transport. This stops all events
+                    // and resets the Transport time to 0.
+                    Tone.Transport.stop();
+                    
+                    /* REMOVED: Explicitly stopping sequences caused errors 
+                       and issues restarting.
+                    if (kickSequence) kickSequence.stop();
+                    if (hiHatSequence) hiHatSequence.stop();
+                    if (bassSequence) bassSequence.stop();
+                    if (melodySequence) melodySequence.stop();
+                    */
+                    
+                    dom.musicToggleButton.textContent = '🔇';
+                } else {
+                    Tone.Transport.start();
+                    
+                    // NEW: Check if sequences are 'stopped' before starting them.
+                    // This ensures they start on the first play, and also
+                    // restart correctly after being stopped by the Transport.
+                    if (kickSequence && kickSequence.state === 'stopped') {
+                         kickSequence.start(0);
+                    }
+                    if (hiHatSequence && hiHatSequence.state === 'stopped') {
+                         hiHatSequence.start(0);
+                    }
+                    if (bassSequence && bassSequence.state === 'stopped') {
+                         bassSequence.start(0);
+                    }
+                    if (melodySequence && melodySequence.state === 'stopped') {
+                         melodySequence.start(0);
+                    }
+
+                    dom.musicToggleButton.textContent = '🎵';
+                }
+                isMusicPlaying = !isMusicPlaying;
+            }
+
+            // ===============================================================
+            // DARK MODE TOGGLE (NEW)
+            // ===============================================================
+            function toggleDarkMode() {
+                state.ui.isDarkMode = !state.ui.isDarkMode;
+                const body = document.body; // Changed from appShell to body
+                if (state.ui.isDarkMode) {
+                    body.classList.add('dark');
+                    dom.darkModeToggleButton.textContent = '☀️';
+                } else {
+                    body.classList.remove('dark');
+                    dom.darkModeToggleButton.textContent = '🌙';
+                }
+            }
+
+            // ===============================================================
+            // 3D GLAZERY SETUP
+            // ===============================================================
+
+            let scene, camera, renderer, donutGroup, glazeMaterial;
+            let isDragging = false;
+            let previousPointerX = 0;
+            let previousPointerY = 0;
+            let initialPinchDistance = 0;
+            let currentCameraZ = 10;
+            let isThreeJSInitialized = false; 
+            let donutSpinSpeed = 0.005; // NEW: Control variable for spin speed
+
+            const MIN_ZOOM_Z = 3;
+            const MAX_ZOOM_Z = 20;
+
+            const glazeColors = [
+                0xFFC0CB, // Original Pink
+                0xADD8E6, // Light Blue
+                0x90EE90, // Light Green
+                0xFFD700, // Gold (Yellow)
+                0x800080, // Purple
+                0xFFF8DC, // Cream
+                0xFF0000, // Red
+                0x000000  // Black
+            ];
+            let currentGlazeColorIndex = 0;
+
+            function createCrackTexture(size = 1024) {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = 'white';
+                ctx.fillRect(0, 0, size, size);
+
+                ctx.strokeStyle = '#333333';
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                
+                for (let i = 0; i < 15; i++) {
+                    ctx.beginPath();
+                    let startX = Math.random() * size;
+                    let startY = Math.random() * size;
+                    ctx.moveTo(startX, startY);
+                    let len = Math.random() * 60 + 30;
+                    let currentX = startX;
+                    let currentY = startY;
+                    for (let j = 0; j < 5; j++) {
+                         currentX += (Math.random() - 0.5) * len;
+                         currentY += (Math.random() - 0.5) * len;
+                         currentX = Math.max(0, Math.min(size, currentX));
+                         currentY = Math.max(0, Math.min(size, currentY));
+                        ctx.lineTo(currentX, currentY);
+                        len *= 0.8;
+                    }
+                    ctx.stroke();
+                }
+
+                return new THREE.CanvasTexture(canvas);
+            }
+
+            function createSpeckleTexture(size = 512, color = 'rgba(0,0,0,0.5)') {
+                const canvas = document.createElement('canvas');
+                canvas.width = size;
+                canvas.height = size;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#FFFFFF'; 
+                ctx.fillRect(0, 0, size, size);
+
+                for (let i = 0; i < 2000; i++) {
+                    const x = Math.random() * size;
+                    const y = Math.random() * size;
+                    const r = Math.random() * 0.8 + 0.4;
+                    const alpha = Math.random() * 0.5 + 0.3;
+                    const shade = Math.floor(Math.random() * 40);
+                    ctx.fillStyle = `rgba(${shade}, ${shade}, ${shade}, ${alpha})`; 
+                    
+                    ctx.beginPath();
+                    ctx.arc(x, y, r, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                return new THREE.CanvasTexture(canvas);
+            }
+
+            function initThreeJS() {
+                if (isThreeJSInitialized) return; 
+                
+                scene = new THREE.Scene();
+                
+                const container = dom.glazery.rainContainer;
+                if (!container) return;
+                const w = container.clientWidth || 300;
+                const h = container.clientHeight || 300;
+
+                camera = new THREE.PerspectiveCamera(75, w / h, 0.1, 1000);
+                camera.position.z = currentCameraZ;
+
+                if (!dom.glazery.canvas) return;
+                renderer = new THREE.WebGLRenderer({ 
+                    canvas: dom.glazery.canvas,
+                    alpha: true
+                });
+                renderer.setSize(w, h);
+                renderer.setPixelRatio(window.devicePixelRatio);
+
+                const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+                scene.add(ambientLight);
+                const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7); 
+                directionalLight.position.set(5, 5, 5);
+                scene.add(directionalLight);
+
+                donutGroup = new THREE.Group();
+                
+                // Donut Base
+                const donutGeometry = new THREE.TorusGeometry(2.8, 1.3, 32, 100);
+
+                const crackTexture = createCrackTexture(1024);
+                crackTexture.wrapS = crackTexture.wrapT = THREE.RepeatWrapping;
+                crackTexture.repeat.set(1, 1);
+                
+                const speckleTexture = createSpeckleTexture(512);
+                speckleTexture.wrapS = speckleTexture.wrapT = THREE.RepeatWrapping;
+                speckleTexture.repeat.set(3, 3);
+
+                const donutMaterial = new THREE.MeshStandardMaterial({ 
+                    color: 0x5C3317,
+                    roughness: 0.8,
+                    metalness: 0.05,
+                    map: speckleTexture,
+                    bumpMap: crackTexture,
+                    bumpScale: 0.08
+                });
+                const donutBase = new THREE.Mesh(donutGeometry, donutMaterial);
+                donutGroup.add(donutBase);
+
+                // Glaze Layer
+                const glazeRadius = 2.75; 
+                const glazeTubeRadius = 1.35; 
+                const radialSegments = 32; 
+                const tubularSegments = 100;
+
+                const glazeGeometry = new THREE.TorusGeometry(
+                    glazeRadius,
+                    glazeTubeRadius,
+                    radialSegments,
+                    tubularSegments
+                );
+                
+                const positionAttribute = glazeGeometry.attributes.position;
+                const tempVector = new THREE.Vector3();
+                const irregularityFactor = 0.15; 
+                const randomOffsets = new Array(tubularSegments).fill(0).map(() => Math.random() * irregularityFactor * 2 - irregularityFactor);
+
+                for (let i = 0; i < positionAttribute.count; i++) {
+                    tempVector.fromBufferAttribute(positionAttribute, i);
+
+                    const x = tempVector.x;
+                    const y = tempVector.y;
+                    const z = tempVector.z;
+                    const r = Math.sqrt(x * x + y * y);
+                    const angleAroundDonut = Math.atan2(y, x); 
+                    const distFromGlazeMainRadius = Math.abs(r - glazeRadius);
+                    const isOuterEdge = distFromGlazeMainRadius < (glazeTubeRadius * 0.4) && r > glazeRadius; 
+                    const isBottomHalf = z < -0.4 * glazeTubeRadius; 
+                    const isInnerEdge = distFromGlazeMainRadius < (glazeTubeRadius * 0.4) && r < glazeRadius;
+
+                    if (isOuterEdge && isBottomHalf) {
+                        const segmentIndex = Math.floor((angleAroundDonut / (2 * Math.PI)) * tubularSegments + tubularSegments) % tubularSegments;
+                        const scallopMagnitude = 0.1 + (randomOffsets[segmentIndex] * 0.8 + 0.5) * 0.1; 
+                        const currentRadius = Math.sqrt(tempVector.x * tempVector.x + tempVector.y * tempVector.y);
+                        const normalizedX = tempVector.x / currentRadius;
+                        const normalizedY = tempVector.y / currentRadius;
+
+                        tempVector.x += normalizedX * scallopMagnitude;
+                        tempVector.y += normalizedY * scallopMagnitude;
+                        tempVector.z += scallopMagnitude * 0.5; 
+                        positionAttribute.setXYZ(i, tempVector.x, tempVector.y, tempVector.z);
+                    } else if (isInnerEdge) {
+                        if (tempVector.z < -0.1) { 
+                           tempVector.z = Math.min(tempVector.z + 0.1, 0); 
+                        }
+                        positionAttribute.setXYZ(i, tempVector.x, tempVector.y, tempVector.z);
+                    }
+                }
+                glazeGeometry.attributes.position.needsUpdate = true;
+                glazeGeometry.computeVertexNormals(); 
+
+                glazeMaterial = new THREE.MeshStandardMaterial({
+                    color: glazeColors[currentGlazeColorIndex],
+                    roughness: 0.2,  
+                    metalness: 0.1,  
+                    transparent: true,
+                    opacity: 0.85    
+                });
+                const glaze = new THREE.Mesh(glazeGeometry, glazeMaterial);
+                glaze.position.z = 0.05; 
+                donutGroup.add(glaze);
+
+                // Sprinkles
+                const sprinkleColors = [0xFF0000, 0xFF7F00, 0xFFFF00, 0x00FF00, 0x0000FF, 0x4B0082, 0x9400D3];
+                const sprinkleShape = new THREE.CylinderGeometry(0.06, 0.06, 0.4, 8); 
+                const numSprinkles = 800; 
+                const R_sprinkle = 2.8; 
+                const r_sprinkle = 1.3 * 0.9; 
+
+                for (let i = 0; i < numSprinkles; i++) {
+                    const color = sprinkleColors[Math.floor(Math.random() * sprinkleColors.length)];
+                    const sprinkleMaterial = new THREE.MeshStandardMaterial({ color: color });
+                    const sprinkle = new THREE.Mesh(sprinkleShape, sprinkleMaterial);
+                    const u = Math.random() * 2 * Math.PI; 
+                    const v = Math.random() * 2 * Math.PI; 
+                    
+                    sprinkle.position.x = (R_sprinkle + r_sprinkle * Math.cos(u)) * Math.cos(v);
+                    sprinkle.position.y = (R_sprinkle + r_sprinkle * Math.cos(u)) * Math.sin(v);
+                    sprinkle.position.z = r_sprinkle * Math.sin(u);
+
+                    if (sprinkle.position.z < -0.2 * 1.3) { 
+                        continue; 
+                    }
+
+                    const centerOfTubeCrossSection = new THREE.Vector3(R_sprinkle * Math.cos(v), R_sprinkle * Math.sin(v), 0);
+                    const normal = new THREE.Vector3().subVectors(sprinkle.position, centerOfTubeCrossSection).normalize();
+                    sprinkle.position.addScaledVector(normal, 0.12); 
+                    sprinkle.lookAt(new THREE.Vector3().addVectors(sprinkle.position, normal));
+                    sprinkle.rotateX(Math.PI / 2); 
+                    sprinkle.rotation.z += Math.random() * Math.PI; 
+                    donutGroup.add(sprinkle);
+                }
+                
+                scene.add(donutGroup);
+
+                // Add pointer listeners for Glazery
+                dom.glazery.canvas.addEventListener('pointerdown', onPointerDown);
+                dom.glazery.canvas.addEventListener('pointermove', onPointerMove);
+                dom.glazery.canvas.addEventListener('pointerup', onPointerUp);
+                dom.glazery.canvas.addEventListener('pointerleave', onPointerUp);
+                dom.glazery.canvas.addEventListener('wheel', onMouseWheel, { passive: false });
+                
+                // Setup zoom slider
+                dom.glazery.zoomSlider.min = MIN_ZOOM_Z;
+                dom.glazery.zoomSlider.max = MAX_ZOOM_Z;
+                dom.glazery.zoomSlider.value = currentCameraZ;
+                dom.glazery.zoomSlider.step = 0.1;
+
+                isThreeJSInitialized = true; 
+            }
+
+            // ===============================================================
+            // UNIVERSAL 3D CONTROLS & ANIMATION
+            // ===============================================================
+
+            function onResize() {
+                // Resize Glazery Canvas
+                if (renderer && camera && dom.glazery.rainContainer) {
+                    const container = dom.glazery.rainContainer;
+                    const w = container.clientWidth;
+                    const h = container.clientHeight;
+                    if (w > 0 && h > 0) {
+                        camera.aspect = w / h;
+                        camera.updateProjectionMatrix();
+                        renderer.setSize(w, h);
+                    }
+                }
+            }
+            window.addEventListener('resize', onResize);
+
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                // Render Glazery if active
+                if (state.ui.activeView === 'glazery' && donutGroup && renderer) {
+                    // MODIFIED: Always spin based on donutSpinSpeed, remove isDragging check
+                    donutGroup.rotation.y += donutSpinSpeed; 
+                    
+                    // NEW: Add damping/friction to slow the spin down
+                    if (donutSpinSpeed > 0.005) {
+                        donutSpinSpeed *= 0.95; // Apply friction
+                        // If it gets very close to the base speed, clamp it
+                        if (donutSpinSpeed < 0.006) {
+                            donutSpinSpeed = 0.005;
+                        }
+                    }
+                    
+                    renderer.render(scene, camera);
+                }
+            }
+
+            // --- Glazery (Donut) Pointer Events ---
+            let pointers = [];
+
+            function getPinchDistance(e) {
+                if (e.touches && e.touches.length === 2) {
+                    const dx = e.touches[0].clientX - e.touches[1].clientX;
+                    const dy = e.touches[0].clientY - e.touches[1].clientY;
+                    return Math.sqrt(dx * dx + dy * dy);
+                }
+                return 0;
+            }
+
+            function onPointerDown(e) {
+                pointers.push(e);
+                if (pointers.length === 1) {
+                    isDragging = true;
+                    previousPointerX = e.clientX;
+                    previousPointerY = e.clientY;
+                } else if (pointers.length === 2) {
+                    isDragging = false;
+                    initialPinchDistance = getPinchDistance(e);
+                }
+                dom.glazery.canvas.setPointerCapture(e.pointerId);
+            }
+
+            function onPointerMove(e) {
+                const index = pointers.findIndex(p => p.pointerId === e.pointerId);
+                if (index > -1) {
+                    pointers[index] = e;
+                }
+
+                if (pointers.length === 2 && initialPinchDistance > 0) {
+                    const currentPinchDistance = getPinchDistance(e);
+                    if (currentPinchDistance === 0) return;
+                    
+                    const zoomFactor = initialPinchDistance / currentPinchDistance;
+                    let newZ = currentCameraZ * zoomFactor;
+                    
+                    newZ = Math.max(MIN_ZOOM_Z, Math.min(MAX_ZOOM_Z, newZ));
+                    camera.position.z = newZ;
+                    camera.updateProjectionMatrix();
+                    dom.glazery.zoomSlider.value = newZ;
+
+                    initialPinchDistance = currentPinchDistance;
+                    currentCameraZ = newZ;
+
+                } else if (isDragging && pointers.length === 1) {
+                    const deltaX = e.clientX - previousPointerX;
+                    const deltaY = e.clientY - previousPointerY;
+                    
+                    donutGroup.rotation.y += deltaX * 0.01;
+                    donutGroup.rotation.x += deltaY * 0.01;
+                    
+                    previousPointerX = e.clientX;
+                    previousPointerY = e.clientY;
+                }
+            }
+
+            function onPointerUp(e) {
+                pointers = pointers.filter(p => p.pointerId !== e.pointerId);
+                dom.glazery.canvas.releasePointerCapture(e.pointerId);
+
+                if (isDragging && pointers.length === 0) {
+                    const deltaX = Math.abs(e.clientX - previousPointerX);
+                    const deltaY = Math.abs(e.clientY - previousPointerY);
+
+                    if(deltaX < 5 && deltaY < 5) {
+                        // If this was a tap/click (not a drag), we do nothing now, 
+                        // as the primary action is on the explicit 'Glaze' button.
+                    }
+                    isDragging = false;
+                }
+
+                if (pointers.length < 2) {
+                    initialPinchDistance = 0;
+                }
+            }
+
+            function onMouseWheel(e) {
+                e.preventDefault();
+                let newZ = currentCameraZ + e.deltaY * 0.02;
+                newZ = Math.max(MIN_ZOOM_Z, Math.min(MAX_ZOOM_Z, newZ));
+                camera.position.z = newZ;
+                camera.updateProjectionMatrix();
+                dom.glazery.zoomSlider.value = newZ;
+                currentCameraZ = newZ;
+            }
+
+            function changeGlazeColor() {
+                if (glazeMaterial) {
+                    currentGlazeColorIndex = (currentGlazeColorIndex + 1) % glazeColors.length;
+                    glazeMaterial.color.set(glazeColors[currentGlazeColorIndex]);
+                }
+            }
+
+
+            // ===============================================================
+            // RENDER/UPDATE FUNCTIONS
+            // ===============================================================
+
+            const updateUI = () => {
+                // NEW: Calculate percentMined globally for both views
+                const { totalDonutSupply, totalCookiesCreated, nextHalvingAt, totalMiners } = state.global;
+                const percentMined = totalDonutSupply > 0 ? (totalCookiesCreated / totalDonutSupply) * 100 : 0;
+
+                // Update Glazery View (always, since it's the main view)
+                
+                // NEW: Update second row of stats
+                dom.glazery.donutBalance.textContent = '🍩 ' + format(state.player.cookies);
+                dom.glazery.totalGlazeTime.textContent = formatGlazeTime(state.player.totalGlazeTimeMs);
+                dom.glazery.percentMined.textContent = formatDecimal(percentMined);
+
+                // --- Update first row of stats ---
+                const bakeryCps = state.player.isBakerKing ? state.global.emissionRate : 0; 
+                dom.glazery.cps.textContent = formatDecimal(bakeryCps);
+                
+                if (state.player.isBakerKing && state.player.glazeStartTime) {
+                    const elapsedMs = Date.now() - state.player.glazeStartTime;
+                    dom.glazery.baked.textContent = formatGlazeTime(elapsedMs);
+                } else {
+                    dom.glazery.baked.textContent = '00:00:00';
+                }
+                
+                const claimableBakery = Math.floor(state.player.claimableBakeryCookies);
+                if (state.player.isBakerKing) {
+                    dom.glazery.kingStatus.textContent = 'You';
+                    dom.glazery.actionButton.textContent = `Bake ${format(claimableBakery)}`;
+                    dom.glazery.actionButton.disabled = claimableBakery < 1;
+                } else {
+                    dom.glazery.kingStatus.textContent = 'None';
+                    dom.glazery.actionButton.textContent = 'Glaze';
+                    dom.glazery.actionButton.disabled = false;
+                }
+                
+                // Update About Page Stats
+                if (state.ui.activeView === 'about') {
+                    // const { totalDonutSupply, totalCookiesCreated, nextHalvingAt, totalMiners } = state.global; // MOVED UP
+                    
+                    dom.aboutPage.totalSupply.textContent = `🍩 ${format(totalDonutSupply)}`;
+                    
+                    // const percentMined = totalDonutSupply > 0 ? (totalCookiesCreated / totalDonutSupply) * 100 : 0; // MOVED UP
+                    dom.aboutPage.percentMined.textContent = `${formatDecimal(percentMined)}%`;
+
+                    const blocksRemaining = nextHalvingAt - totalCookiesCreated;
+                    const secondsRemaining = Math.max(0, Math.floor(blocksRemaining * (GAME_TICK_MS / 100))); 
+                    const hours = Math.floor(secondsRemaining / 3600);
+                    const minutes = Math.floor((secondsRemaining % 3600) / 60);
+                    const seconds = secondsRemaining % 60;
+                    dom.aboutPage.nextHalving.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+
+                    dom.aboutPage.totalMiners.textContent = `👤 ${format(totalMiners)}`;
+                }
+            };
+            
+
+            const showView = (viewName) => {
+                // Hide all views
+                for (const key in dom.views) {
+                    dom.views[key].classList.add('hidden');
+                }
+                // Deactivate all nav icons
+                for (const key in dom.nav) {
+                    dom.nav[key].classList.remove('active');
+                }
+
+                // Show selected view
+                if (dom.views[viewName]) {
+                    dom.views[viewName].classList.remove('hidden');
+                    state.ui.activeView = viewName;
+                }
+                // Activate selected nav icon
+                if (dom.nav[viewName]) {
+                    dom.nav[viewName].classList.add('active');
+                }
+                
+                if (viewName === 'glazery' && !isThreeJSInitialized) {
+                    setTimeout(initThreeJS, 0);
+                }
+
+                updateUI();
+                
+                setTimeout(onResize, 50);
+            };
+
+            // ===============================================================
+            // GAME ACTIONS (MODIFIED)
+            // ===============================================================
+
+            const handleMinerAction = () => {
+                donutSpinSpeed = 0.5; // Set spin speed to high!
+
+                if (state.player.isBakerKing) {
+                    // Action: Claim "Bake" (In-game logic)
+                    const claimable = Math.floor(state.player.claimableBakeryCookies);
+                    if (claimable > 0) {
+                        playSoundEffect('purchase');
+                        state.player.cookies += claimable;
+                        state.player.totalBakedCookies += claimable;
+                        state.player.claimableBakeryCookies = 0;
+                        console.log(`Claimed ${claimable} cookies.`);
+                    }
+                } else {
+                    // Action: Become "Glazer" (King) - **TRIGGER FARCASTER FRAME**
+                    
+                    console.log("Glaze button clicked. Redirecting to Farcaster Frame endpoint.");
+                    
+                    // This redirection causes the Farcaster client (e.g., Warpcast) to 
+                    // pop up the transaction/payment frame defined by the target URL.
+                    window.location.href = GLAZE_FRAME_URL;
+                    return; // Exit the function to prevent further local updates
+                }
+                
+                updateUI();
+            };
+
+            // ===============================================================
+            // GAME LOOP
+            // ===============================================================
+            
+            const GAME_TICK_MS = 100;
+
+            const gameLoop = () => {
+                // MOCK: Increment total mined cookies for countdown demo
+                state.global.totalCookiesCreated += state.global.emissionRate * (GAME_TICK_MS / 1000);
+                
+                // MOCK: Increment claimable cookies if king
+                if (state.player.isBakerKing) {
+                    const bakeryCps = state.global.emissionRate;
+                    state.player.claimableBakeryCookies += bakeryCps * (GAME_TICK_MS / 1000);
+                    state.player.totalGlazeTimeMs += GAME_TICK_MS; // NEW: Increment total glaze time
+                }
+                
+                updateUI();
+            };
+
+            // ===============================================================
+            // INITIALIZATION
+            // ===============================================================
+            
+            dom.nav.glazery.onclick = () => { playSoundEffect('crunch'); showView('glazery'); };
+            dom.nav.about.onclick = () => { playSoundEffect('crunch'); showView('about'); };
+
+            dom.glazery.actionButton.onclick = handleMinerAction;
+            dom.musicToggleButton.onclick = toggleMusic;
+            dom.sfxToggleButton.onclick = toggleSfx;
+            dom.darkModeToggleButton.onclick = () => {
+                playSoundEffect('crunch');
+                toggleDarkMode();
+            };
+            dom.glazery.glazeColorButton.onclick = () => {
+                playSoundEffect('crunch');
+                changeGlazeColor();
+            };
+
+            dom.glazery.zoomSlider.oninput = () => {
+                if (!isThreeJSInitialized) return;
+                const newZ = parseFloat(dom.glazery.zoomSlider.value);
+                camera.position.z = newZ;
+                camera.updateProjectionMatrix();
+                currentCameraZ = newZ;
+            };
+
+            showView('glazery');
+            setInterval(gameLoop, GAME_TICK_MS);
+            
+            if (!isThreeJSInitialized) {
+                setTimeout(initThreeJS, 0); 
+            }
+            
+            animate();
+        });
+    </script>
 </body>
 </html>
-
