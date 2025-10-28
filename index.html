@@ -114,12 +114,12 @@
         .color-cycle-button { /* Applied to both glaze and sprinkle buttons */
             position: absolute; /* Will be positioned relative to parent */
             bottom: 10px;
-            width: 40px; /* Make it a square */
-            height: 40px;
+            width: 32px; /* Smaller width */
+            height: 32px; /* Smaller height */
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+            font-size: 18px; /* Smaller font size */
             border-radius: 50%; /* Circular button */
             cursor: pointer;
             border: 2px solid #E0E0E0; /* Subtle border */
@@ -134,13 +134,13 @@
         }
         /* Specific positioning */
         #glaze-color-button {
-            right: 10px;
+            right: 8px; /* Adjusted right spacing */
         }
         #sprinkle-color-button { /* New button */
-            right: 58px; /* 10px (glaze) + 40px (button width) + 8px (gap) */
+            right: 48px; /* 8px (glaze) + 32px (button width) + 8px (gap) */
         }
         #donut-base-color-button { /* NEW */
-            right: 106px; /* 58px (sprinkle) + 40px (button width) + 8px (gap) */
+            right: 88px; /* 48px (sprinkle) + 32px (button width) + 8px (gap) */
         }
 
 
@@ -388,16 +388,16 @@
         .zoom-slider {
             position: absolute;
             top: 50%;
-            right: 12px;
+            right: 8px; /* Adjusted to match new button spacing */
             transform: translateY(-50%); /* Center vertically */
-            width: 20px; /* Track thickness */
-            height: 120px; /* Track length */
+            width: 16px; /* Track thickness */
+            height: 100px; /* Track length */
             -webkit-appearance: none;
             appearance: none;
             writing-mode: vertical-lr; /* Make it vertical */
             direction: ltr;
             background: rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
+            border-radius: 8px; /* Slightly smaller border radius */
             z-index: 30;
             padding: 0;
             transition: background 0.2s;
@@ -411,16 +411,16 @@
         .zoom-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 26px; /* Touch target */
-            height: 26px;
+            width: 22px; /* Touch target */
+            height: 22px;
             background: #FFFACD; /* Pale Butter Yellow */
             border-radius: 50%;
             border: 2px solid #E75480; /* Pink border */
             cursor: grab;
         }
         .zoom-slider::-moz-range-thumb {
-            width: 26px;
-            height: 26px;
+            width: 22px;
+            height: 22px;
             background: #FFFACD;
             border-radius: 50%;
             border: 2px solid #E75480;
@@ -487,9 +487,7 @@
                 <div class="falling-snow"></div>
                 <canvas id="cookie-canvas"></canvas>
                 <button id="glaze-color-button" class="color-cycle-button shadow-tamagotchi bg-white text-tamagotchi-dark">🎨</button>
-                <button id="sprinkle-color-button" class="color-cycle-button shadow-tamagotchi bg-white text-tamagotchi-dark">🌈</button> <!-- NEW: Sprinkle color button -->
-                <button id="donut-base-color-button" class="color-cycle-button shadow-tamagotchi bg-white text-tamagotchi-dark">🍩</button> <!-- NEW: Donut base color button -->
-                <!-- NEW: Zoom Slider --><input id="glazery-zoom-slider" type="range" class="zoom-slider">
+                <button id="sprinkle-color-button" class="color-cycle-button shadow-tamagotchi bg-white text-tamagotchi-dark">🌈</button> <!-- NEW: Sprinkle color button --><button id="donut-base-color-button" class="color-cycle-button shadow-tamagotchi bg-white text-tamagotchi-dark">🍩</button> <!-- NEW: Donut base color button --><!-- NEW: Zoom Slider --><input id="glazery-zoom-slider" type="range" class="zoom-slider">
             </div>
 
             <div id="bottom-ticker" class="ticker-wrap" style="margin-top: 4px;">
@@ -903,7 +901,8 @@
                 0xDEB887, // BurlyWood (Lighter)
                 0x3D2B1F, // Dark Brown
                 0xF5DEB3, // Wheat
-                0xFFC0CB  // Pink (for fun)
+                0xFFC0CB, // Pink (for fun)
+                null      // NEW: Wireframe flag
             ];
             let currentDonutBaseColorIndex = 0;
 
@@ -1234,7 +1233,9 @@
                     initialPinchDistance = currentPinchDistance;
                     currentCameraZ = newZ;
 
-                } else if (isDragging && pointers.length === 1) {
+                }
+                // MODIFIED: Allow rotation with one finger even if another is still down (pinch ended)
+                if (isDragging && pointers.length === 1) { 
                     const deltaX = e.clientX - previousPointerX;
                     const deltaY = e.clientY - previousPointerY;
                     
@@ -1250,20 +1251,8 @@
                 pointers = pointers.filter(p => p.pointerId !== e.pointerId);
                 dom.glazery.canvas.releasePointerCapture(e.pointerId);
 
+                // No longer perform action on up, just stop dragging
                 if (isDragging && pointers.length === 0) {
-                    const deltaX = Math.abs(e.clientX - previousPointerX);
-                    const deltaY = Math.abs(e.clientY - previousPointerY);
-
-                    if(deltaX < 5 && deltaY < 5) {
-                        // handleMinerAction(); // <-- REMOVED
-                        
-                        // REMOVED visual pop effect
-                        /* donutGroup.scale.set(1.1, 1.1, 1.1);
-                        setTimeout(() => {
-                            donutGroup.scale.set(1, 1, 1);
-                        }, 100);
-                        */
-                    }
                     isDragging = false;
                 }
 
@@ -1292,7 +1281,18 @@
             function changeDonutBaseColor() { // NEW
                 if (donutMaterial) {
                     currentDonutBaseColorIndex = (currentDonutBaseColorIndex + 1) % donutBaseColors.length;
-                    donutMaterial.color.set(donutBaseColors[currentDonutBaseColorIndex]);
+                    const newColorOrMode = donutBaseColors[currentDonutBaseColorIndex];
+
+                    if (newColorOrMode === null) {
+                        // Activate wireframe mode
+                        donutMaterial.wireframe = true;
+                        // Set wireframe color to something visible (e.g., light cream, matches dark mode text)
+                        donutMaterial.color.set(0xF5E6C1); 
+                    } else {
+                        // Activate solid mode
+                        donutMaterial.wireframe = false;
+                        donutMaterial.color.set(newColorOrMode);
+                    }
                 }
             }
 
@@ -1459,5 +1459,4 @@
     </script>
 </body>
 </html>
-
 
