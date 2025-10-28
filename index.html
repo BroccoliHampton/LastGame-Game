@@ -1414,6 +1414,7 @@
             // ===============================================================
             
             // REMOVED nav listeners
+            // NOTE: This will be replaced by handleMinerActionWithContract after contract integration loads
             dom.glazery.actionButton.onclick = handleMinerAction;
             dom.musicToggleButton.onclick = toggleMusic;
             dom.sfxToggleButton.onclick = toggleSfx;
@@ -1455,8 +1456,368 @@
             }
             
             animate();
+
+            // =====================================================================
+            // CONTRACT INTEGRATION INITIALIZATION
+            // =====================================================================
+            
+            // Initialize contract integration after game is ready
+            if (typeof contractIntegration !== 'undefined' && contractIntegration.initContractIntegration) {
+                console.log('[Game] Initializing contract integration...');
+                contractIntegration.initContractIntegration();
+            } else {
+                console.warn('[Game] Contract integration module not found');
+            }
         });
+
+        // =============================================================================
+        // CONTRACT INTEGRATION MODULE
+        // =============================================================================
+
+        // --- CONFIGURATION ---
+        // IMPORTANT: This points to your API deployment (not the game URL)
+        const API_BASE_URL = 'https://last-game-kappa.vercel.app'; // Your API Vercel deployment
+        const GAME_REFRESH_INTERVAL = 10000; // Refresh every 10 seconds
+
+        // --- CONTRACT DATA STATE ---
+        let contractData = {
+            currentMiner: null,
+            price: '0',
+            priceInEth: '0',
+            epochId: 0,
+            currentDps: '0',
+            currentDpsFormatted: '0',
+            nextDps: '0',
+            nextDpsFormatted: '0',
+            userDonutBalance: '0',
+            userDonutBalanceFormatted: '0',
+            userEthBalance: '0',
+            userEthBalanceFormatted: '0',
+            claimableDonuts: '0',
+            claimableDonutsFormatted: '0',
+            totalDonutSupply: '0',
+            totalDonutSupplyFormatted: '0',
+            secondsUntilHalving: 0,
+            timeAsMiner: 0,
+            userAddress: null
+        };
+
+        // --- HELPER FUNCTIONS ---
+
+        // Format numbers for display
+        function formatNumber(num) {
+            const n = parseFloat(num);
+            if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(2) + 'K';
+            return n.toFixed(2);
+        }
+
+        // Format time as HH:MM:SS
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // --- FETCH GAME STATE FROM API ---
+        async function fetchGameState(userAddress = null) {
+            try {
+                const url = userAddress 
+                    ? `${API_BASE_URL}/api/get-game-state?userAddress=${userAddress}`
+                    : `${API_BASE_URL}/api/get-game-state`;
+                
+                console.log('[Contract] Fetching game state from:', url);
+                console.log('[Contract] Current origin:', window.location.origin);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+                
+                console.log('[Contract] Fetch response status:', response.status);
+                console.log('[Contract] Fetch response ok:', response.ok);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('[Contract] Game state received:', data);
+                
+                // Update contract data
+                contractData = {
+                    ...contractData,
+                    ...data
+                };
+                
+                return data;
+            } catch (error) {
+                console.error('[Contract] Error fetching game state:', error);
+                console.error('[Contract] Error type:', error.name);
+                console.error('[Contract] Error message:', error.message);
+                
+                // Try to provide more helpful error info
+                if (error.message === 'Failed to fetch') {
+                    console.error('[Contract] This is likely a CORS or network issue');
+                    console.error('[Contract] Check that API is accessible and CORS is configured');
+                }
+                
+                return null;
+            }
+        }
+
+        // --- GET USER ADDRESS FROM FARCASTER CONTEXT ---
+        async function getUserAddress() {
+            try {
+                console.log('[Contract] Attempting to get user from Farcaster context...');
+                
+                // Method 1: Check for Farcaster frame context (injected by Farcaster)
+                if (window.frameContext && window.frameContext.user) {
+                    const fid = window.frameContext.user.fid;
+                    console.log('[Contract] User FID from frameContext:', fid);
+                    
+                    // Get address from Farcaster via API
+                    try {
+                        const response = await fetch(`https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`, {
+                            headers: {
+                                'api_key': 'NEYNAR_ONCHAIN_KIT' // Public key for basic lookups
+                            }
+                        });
+                        const data = await response.json();
+                        if (data.users && data.users[0] && data.users[0].verified_addresses && data.users[0].verified_addresses.eth_addresses) {
+                            const address = data.users[0].verified_addresses.eth_addresses[0];
+                            console.log('[Contract] User address from Neynar:', address);
+                            contractData.userAddress = address;
+                            return address;
+                        }
+                    } catch (e) {
+                        console.log('[Contract] Could not fetch address from Neynar:', e.message);
+                    }
+                }
+                
+                // Method 2: Try Farcaster SDK as fallback
+                console.log('[Contract] Trying Farcaster SDK as fallback...');
+                try {
+                    const sdkImport = await Promise.race([
+                        import('https://esm.sh/@farcaster/miniapp-sdk'),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('SDK timeout')), 3000))
+                    ]);
+                    
+                    const sdk = sdkImport.default;
+                    await sdk.actions.ready();
+                    
+                    const provider = await sdk.wallet.getEthereumProvider();
+                    if (provider) {
+                        const accounts = await provider.request({ method: 'eth_requestAccounts' });
+                        const address = accounts[0];
+                        console.log('[Contract] User address from SDK:', address);
+                        contractData.userAddress = address;
+                        return address;
+                    }
+                } catch (sdkError) {
+                    console.log('[Contract] SDK fallback failed:', sdkError.message);
+                }
+                
+                console.log('[Contract] Could not get user address - continuing without it');
+                return null;
+                
+            } catch (error) {
+                console.log('[Contract] Error getting user address:', error.message);
+                return null;
+            }
+        }
+
+        // --- UPDATE UI WITH CONTRACT DATA ---
+        function updateUIFromContract() {
+            console.log('[Contract] Updating UI with contract data');
+            
+            // Check if state exists first
+            if (typeof state === 'undefined' || !state) {
+                console.log('[Contract] Game state not ready yet, skipping UI update');
+                return;
+            }
+            
+            // Update global state to reflect contract data
+            if (state && state.global) {
+                // Map contract data to game state
+                state.global.emissionRate = parseFloat(contractData.currentDpsFormatted);
+                state.global.totalDonutSupply = parseFloat(contractData.totalDonutSupplyFormatted);
+                state.global.totalCookiesCreated = parseFloat(contractData.totalDonutSupplyFormatted); // Simplified
+                
+                // Update player state
+                if (state.player) {
+                    state.player.cookies = parseFloat(contractData.userDonutBalanceFormatted);
+                    
+                    // Check if user is the current miner
+                    const userIsMiner = contractData.userAddress && 
+                                       contractData.currentMiner && 
+                                       contractData.userAddress.toLowerCase() === contractData.currentMiner.toLowerCase();
+                    
+                    state.player.isBakerKing = userIsMiner;
+                    
+                    if (userIsMiner) {
+                        state.player.claimableBakeryCookies = parseFloat(contractData.claimableDonutsFormatted);
+                        state.player.glazeStartTime = Date.now() - (contractData.timeAsMiner * 1000);
+                    } else {
+                        state.player.claimableBakeryCookies = 0;
+                        state.player.glazeStartTime = null;
+                    }
+                }
+            }
+            
+            // Update modal info if it exists
+            if (typeof dom !== 'undefined' && dom.modalInfo) {
+                if (dom.modalInfo.totalSupply) {
+                    dom.modalInfo.totalSupply.textContent = `🍩 ${formatNumber(contractData.totalDonutSupplyFormatted)}`;
+                }
+                if (dom.modalInfo.nextHalving) {
+                    dom.modalInfo.nextHalving.textContent = formatTime(contractData.secondsUntilHalving);
+                }
+                if (dom.modalInfo.totalMiners) {
+                    dom.modalInfo.totalMiners.textContent = `👤 1`; // Only one miner at a time
+                }
+            }
+            
+            // Trigger UI update
+            if (typeof updateUI === 'function') {
+                updateUI();
+            }
+        }
+
+        // --- OPEN TRANSACTION FRAME ---
+        function openGlazeFrame() {
+            console.log('[Contract] Opening glaze transaction frame');
+            
+            // The payment-frame.js will handle the transaction
+            const frameUrl = `${API_BASE_URL}/api/payment-frame`;
+            
+            // Open in a new window (Farcaster will handle this appropriately)
+            window.open(frameUrl, '_blank');
+            
+            // Start polling for state changes after frame opens
+            setTimeout(() => {
+                console.log('[Contract] Starting refresh after frame opened');
+                startAutoRefresh();
+            }, 2000);
+        }
+
+        // --- AUTO REFRESH ---
+        let refreshInterval = null;
+
+        function startAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            
+            refreshInterval = setInterval(async () => {
+                console.log('[Contract] Auto-refreshing game state...');
+                await fetchGameState(contractData.userAddress);
+                updateUIFromContract();
+            }, GAME_REFRESH_INTERVAL);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+        }
+
+        // --- INITIALIZATION ---
+        async function initContractIntegration() {
+            console.log('[Contract] Initializing contract integration...');
+            
+            try {
+                // Get user address (may fail if not in Farcaster)
+                const userAddress = await getUserAddress();
+                
+                // Fetch initial game state (should always work)
+                console.log('[Contract] Fetching game state...');
+                const gameState = await fetchGameState(userAddress);
+                
+                if (!gameState) {
+                    console.error('[Contract] Failed to fetch game state - will retry');
+                    // Try again without user address
+                    await fetchGameState(null);
+                }
+                
+                // Update UI
+                updateUIFromContract();
+                
+                // Start auto refresh
+                startAutoRefresh();
+                
+                console.log('[Contract] Contract integration initialized successfully');
+            } catch (error) {
+                console.error('[Contract] Error during initialization:', error);
+                console.log('[Contract] Will continue with limited functionality');
+                
+                // Try to at least fetch game state without user
+                try {
+                    await fetchGameState(null);
+                    updateUIFromContract();
+                    startAutoRefresh();
+                } catch (e) {
+                    console.error('[Contract] Critical error - cannot fetch game state:', e);
+                }
+            }
+        }
+
+        // --- OVERRIDE GLAZE BUTTON HANDLER ---
+        // This replaces the mock handleMinerAction with real contract interaction
+        const originalHandleMinerAction = typeof handleMinerAction !== 'undefined' ? handleMinerAction : null;
+
+        function handleMinerActionWithContract() {
+            console.log('[Contract] Glaze button clicked');
+            
+            // Spin the donut!
+            if (typeof donutSpinSpeed !== 'undefined') {
+                donutSpinSpeed = 0.5;
+            }
+            
+            // Check if user is current miner
+            const userIsMiner = contractData.userAddress && 
+                               contractData.currentMiner && 
+                               contractData.userAddress.toLowerCase() === contractData.currentMiner.toLowerCase();
+            
+            if (userIsMiner) {
+                // User is miner, but rewards are auto-claimed when someone else takes over
+                alert('You are the current miner! Your rewards will be claimed automatically when someone else takes over.');
+            } else {
+                // User wants to become miner - open transaction frame
+                openGlazeFrame();
+            }
+        }
+
+        // Replace the glaze button handler
+        if (typeof handleMinerAction !== 'undefined') {
+            // Save original
+            window.originalHandleMinerAction = handleMinerAction;
+            // Replace with contract version
+            window.handleMinerAction = handleMinerActionWithContract;
+            handleMinerAction = handleMinerActionWithContract;
+        }
+
+        // --- EXPORT FOR GLOBAL ACCESS ---
+        window.contractIntegration = {
+            fetchGameState,
+            getUserAddress,
+            updateUIFromContract,
+            openGlazeFrame,
+            startAutoRefresh,
+            stopAutoRefresh,
+            initContractIntegration,
+            contractData,
+            formatNumber,
+            formatTime
+        };
+
+        console.log('[Contract] Contract integration module loaded. Call contractIntegration.initContractIntegration() to start.');
     </script>
 </body>
 </html>
-
