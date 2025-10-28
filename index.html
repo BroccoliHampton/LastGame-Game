@@ -1414,6 +1414,7 @@
             // ===============================================================
             
             // REMOVED nav listeners
+            // NOTE: This will be replaced by handleMinerActionWithContract after contract integration loads
             dom.glazery.actionButton.onclick = handleMinerAction;
             dom.musicToggleButton.onclick = toggleMusic;
             dom.sfxToggleButton.onclick = toggleSfx;
@@ -1455,8 +1456,289 @@
             }
             
             animate();
+
+            // =====================================================================
+            // CONTRACT INTEGRATION INITIALIZATION
+            // =====================================================================
+            
+            // Initialize contract integration after game is ready
+            if (typeof contractIntegration !== 'undefined' && contractIntegration.initContractIntegration) {
+                console.log('[Game] Initializing contract integration...');
+                contractIntegration.initContractIntegration();
+            } else {
+                console.warn('[Game] Contract integration module not found');
+            }
         });
+
+        // =============================================================================
+        // CONTRACT INTEGRATION MODULE
+        // =============================================================================
+
+        // --- CONFIGURATION ---
+        // IMPORTANT: Update this to your API deployment URL (not the game URL)
+        const API_BASE_URL = 'https://last-game-kappa.vercel.app'; // Your API Vercel deployment
+        const GAME_REFRESH_INTERVAL = 10000; // Refresh every 10 seconds
+
+        // --- CONTRACT DATA STATE ---
+        let contractData = {
+            currentMiner: null,
+            price: '0',
+            priceInEth: '0',
+            epochId: 0,
+            currentDps: '0',
+            currentDpsFormatted: '0',
+            nextDps: '0',
+            nextDpsFormatted: '0',
+            userDonutBalance: '0',
+            userDonutBalanceFormatted: '0',
+            userEthBalance: '0',
+            userEthBalanceFormatted: '0',
+            claimableDonuts: '0',
+            claimableDonutsFormatted: '0',
+            totalDonutSupply: '0',
+            totalDonutSupplyFormatted: '0',
+            secondsUntilHalving: 0,
+            timeAsMiner: 0,
+            userAddress: null
+        };
+
+        // --- HELPER FUNCTIONS ---
+
+        // Format numbers for display
+        function formatNumber(num) {
+            const n = parseFloat(num);
+            if (n >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(2) + 'K';
+            return n.toFixed(2);
+        }
+
+        // Format time as HH:MM:SS
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // --- FETCH GAME STATE FROM API ---
+        async function fetchGameState(userAddress = null) {
+            try {
+                const url = userAddress 
+                    ? `${API_BASE_URL}/api/get-game-state?userAddress=${userAddress}`
+                    : `${API_BASE_URL}/api/get-game-state`;
+                
+                console.log('[Contract] Fetching game state from:', url);
+                
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('[Contract] Game state received:', data);
+                
+                // Update contract data
+                contractData = {
+                    ...contractData,
+                    ...data
+                };
+                
+                return data;
+            } catch (error) {
+                console.error('[Contract] Error fetching game state:', error);
+                return null;
+            }
+        }
+
+        // --- GET USER ADDRESS FROM FARCASTER SDK ---
+        async function getUserAddress() {
+            try {
+                console.log('[Contract] Attempting to get user address from Farcaster SDK...');
+                
+                // Import Farcaster SDK
+                const { default: sdk } = await import('https://esm.sh/@farcaster/miniapp-sdk');
+                await sdk.actions.ready();
+                
+                // Get Ethereum provider
+                const provider = await sdk.wallet.getEthereumProvider();
+                if (!provider) {
+                    console.log('[Contract] No Ethereum provider available');
+                    return null;
+                }
+                
+                // Request accounts
+                const accounts = await provider.request({ method: 'eth_requestAccounts' });
+                const address = accounts[0];
+                
+                console.log('[Contract] User address obtained:', address);
+                contractData.userAddress = address;
+                return address;
+                
+            } catch (error) {
+                console.log('[Contract] Could not get user address:', error.message);
+                return null;
+            }
+        }
+
+        // --- UPDATE UI WITH CONTRACT DATA ---
+        function updateUIFromContract() {
+            console.log('[Contract] Updating UI with contract data');
+            
+            // Update global state to reflect contract data
+            if (state && state.global) {
+                // Map contract data to game state
+                state.global.emissionRate = parseFloat(contractData.currentDpsFormatted);
+                state.global.totalDonutSupply = parseFloat(contractData.totalDonutSupplyFormatted);
+                state.global.totalCookiesCreated = parseFloat(contractData.totalDonutSupplyFormatted); // Simplified
+                
+                // Update player state
+                if (state.player) {
+                    state.player.cookies = parseFloat(contractData.userDonutBalanceFormatted);
+                    
+                    // Check if user is the current miner
+                    const userIsMiner = contractData.userAddress && 
+                                       contractData.currentMiner && 
+                                       contractData.userAddress.toLowerCase() === contractData.currentMiner.toLowerCase();
+                    
+                    state.player.isBakerKing = userIsMiner;
+                    
+                    if (userIsMiner) {
+                        state.player.claimableBakeryCookies = parseFloat(contractData.claimableDonutsFormatted);
+                        state.player.glazeStartTime = Date.now() - (contractData.timeAsMiner * 1000);
+                    } else {
+                        state.player.claimableBakeryCookies = 0;
+                        state.player.glazeStartTime = null;
+                    }
+                }
+            }
+            
+            // Update modal info if it exists
+            if (dom.modalInfo) {
+                if (dom.modalInfo.totalSupply) {
+                    dom.modalInfo.totalSupply.textContent = `🍩 ${formatNumber(contractData.totalDonutSupplyFormatted)}`;
+                }
+                if (dom.modalInfo.nextHalving) {
+                    dom.modalInfo.nextHalving.textContent = formatTime(contractData.secondsUntilHalving);
+                }
+                if (dom.modalInfo.totalMiners) {
+                    dom.modalInfo.totalMiners.textContent = `👤 1`; // Only one miner at a time
+                }
+            }
+            
+            // Trigger UI update
+            if (typeof updateUI === 'function') {
+                updateUI();
+            }
+        }
+
+        // --- OPEN TRANSACTION FRAME ---
+        function openGlazeFrame() {
+            console.log('[Contract] Opening glaze transaction frame');
+            
+            // The payment-frame.js will handle the transaction
+            const frameUrl = `${API_BASE_URL}/api/payment-frame`;
+            
+            // Open in a new window (Farcaster will handle this appropriately)
+            window.open(frameUrl, '_blank');
+            
+            // Start polling for state changes after frame opens
+            setTimeout(() => {
+                console.log('[Contract] Starting refresh after frame opened');
+                startAutoRefresh();
+            }, 2000);
+        }
+
+        // --- AUTO REFRESH ---
+        let refreshInterval = null;
+
+        function startAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+            
+            refreshInterval = setInterval(async () => {
+                console.log('[Contract] Auto-refreshing game state...');
+                await fetchGameState(contractData.userAddress);
+                updateUIFromContract();
+            }, GAME_REFRESH_INTERVAL);
+        }
+
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+                refreshInterval = null;
+            }
+        }
+
+        // --- INITIALIZATION ---
+        async function initContractIntegration() {
+            console.log('[Contract] Initializing contract integration...');
+            
+            // Get user address
+            const userAddress = await getUserAddress();
+            
+            // Fetch initial game state
+            await fetchGameState(userAddress);
+            
+            // Update UI
+            updateUIFromContract();
+            
+            // Start auto refresh
+            startAutoRefresh();
+            
+            console.log('[Contract] Contract integration initialized');
+        }
+
+        // --- OVERRIDE GLAZE BUTTON HANDLER ---
+        // This replaces the mock handleMinerAction with real contract interaction
+        const originalHandleMinerAction = typeof handleMinerAction !== 'undefined' ? handleMinerAction : null;
+
+        function handleMinerActionWithContract() {
+            console.log('[Contract] Glaze button clicked');
+            
+            // Spin the donut!
+            if (typeof donutSpinSpeed !== 'undefined') {
+                donutSpinSpeed = 0.5;
+            }
+            
+            // Check if user is current miner
+            const userIsMiner = contractData.userAddress && 
+                               contractData.currentMiner && 
+                               contractData.userAddress.toLowerCase() === contractData.currentMiner.toLowerCase();
+            
+            if (userIsMiner) {
+                // User is miner, but rewards are auto-claimed when someone else takes over
+                alert('You are the current miner! Your rewards will be claimed automatically when someone else takes over.');
+            } else {
+                // User wants to become miner - open transaction frame
+                openGlazeFrame();
+            }
+        }
+
+        // Replace the glaze button handler
+        if (typeof handleMinerAction !== 'undefined') {
+            // Save original
+            window.originalHandleMinerAction = handleMinerAction;
+            // Replace with contract version
+            window.handleMinerAction = handleMinerActionWithContract;
+            handleMinerAction = handleMinerActionWithContract;
+        }
+
+        // --- EXPORT FOR GLOBAL ACCESS ---
+        window.contractIntegration = {
+            fetchGameState,
+            getUserAddress,
+            updateUIFromContract,
+            openGlazeFrame,
+            startAutoRefresh,
+            stopAutoRefresh,
+            initContractIntegration,
+            contractData,
+            formatNumber,
+            formatTime
+        };
+
+        console.log('[Contract] Contract integration module loaded. Call contractIntegration.initContractIntegration() to start.');
     </script>
 </body>
 </html>
-
