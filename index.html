@@ -436,19 +436,12 @@
                 <h1 class="text-3xl font-black text-tamagotchi-pink-dark" style="font-family: 'Luckiest Guy', cursive;">Donut Miner</h1>
                 
                 <!-- NEW: Profile Name Section (MOVED & SHRUNK) --><div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-2 flex items-center space-x-3 mt-1">
-                    <div class="w-8 h-8 rounded-tamagotchi-md bg-tamagotchi-button-teal flex items-center justify-center text-lg font-bold text-white"> <!-- Shrunk from w-10 h-10 -->
-                        <span>👤</span> <!-- Simple profile icon -->
-                    </div>
                     <div>
-                        <div class="text-xs text-gray-500 font-semibold">Profile</div>
                         <div id="player-profile-name" class="font-extrabold text-sm truncate text-tamagotchi-dark">DonutEnthusiast_123</div>
                     </div>
                 </div>
-                <!-- END: Profile Name Section -->
-
-            </div>
-            <div class="flex space-x-2 self-start"> <!-- MODIFIED: Added self-start -->
-                <button id="dark-mode-toggle-button" class="bg-tamagotchi-button-teal text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
+                <!-- END: Profile Name Section --></div>
+            <div class="flex space-x-2 self-start"> <!-- MODIFIED: Added self-start --><button id="dark-mode-toggle-button" class="bg-tamagotchi-button-teal text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
                     🌙
                 </button>
                 <button id="music-toggle-button" class="bg-tamagotchi-button-pink text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
@@ -457,8 +450,7 @@
                 <button id="sfx-toggle-button" class="bg-tamagotchi-button-teal text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
                     🔊
                 </button>
-                <!-- NEW BUTTON -->
-                <button id="info-button" class="bg-tamagotchi-button-pink text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
+                <!-- NEW BUTTON --><button id="info-button" class="bg-tamagotchi-button-pink text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
                     ❓
                 </button>
             </div>
@@ -466,10 +458,6 @@
 
         <!-- =============================================================== --><!-- GLAZERY VIEW (Restored)                                       --><!-- =============================================================== --><div id="view-glazery" class="flex-grow flex flex-col">
             <!-- REMOVED: Glazery h2 Subtitle --><!-- REMOVED: Profile Name Section -->
-            
-            <p class="text-sm text-gray-500 mb-2" style="font-family: 'Comic Neue', cursive;">
-                Pay the Glaze Price to become KING GLAZER and earn 100% of $DONUT emissions until someone takes the spot after you.
-            </p>
             <div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-2 grid grid-cols-3 gap-2">
                 <div class="text-center">
                     <div class="text-xs text-gray-500 font-semibold">King Glazer</div>
@@ -485,10 +473,7 @@
                 </div>
             </div>
 
-            <!-- MOVED: Second Row of Stats DIV was here -->
-
-            <div id="top-ticker" class="ticker-wrap" style="margin-bottom: 4px; margin-top: 8px;"> <!-- MODIFIED: Added margin-top -->
-                <div class="ticker-move">
+            <!-- MOVED: Second Row of Stats DIV was here --><div id="top-ticker" class="ticker-wrap" style="margin-bottom: 4px; margin-top: 8px;"> <!-- MODIFIED: Added margin-top --><div class="ticker-move">
                     <!-- UPDATED TEXT --><span>Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour. ... Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour. ... </span>
                 </div>
             </div>
@@ -538,17 +523,13 @@
 
         <!-- =============================================================== --><!-- ABOUT VIEW (Restored)                                         --><!-- =============================================================== --><!-- REMOVED view-about DIV --><!-- BAKERY VIEW REMOVED --></main>
 
-    <!-- REMOVED nav ELEMENT -->
-
-    <!-- NEW INFO MODAL -->
-    <div id="info-modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+    <!-- REMOVED nav ELEMENT --><!-- NEW INFO MODAL --><div id="info-modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
     <div id="info-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-4 z-50 hidden w-11/12 max-w-xs text-tamagotchi-dark overflow-y-auto" style="max-height: 90vh;">
         <div class="flex justify-between items-center mb-2">
             <h3 class="text-xl font-bold text-tamagotchi-pink-dark">Info</h3>
             <button id="info-modal-close" class="text-2xl font-bold text-gray-500 hover:text-tamagotchi-pink-dark">&times;</button>
         </div>
-        <!-- CONTENT MOVED FROM 'ABOUT' TAB -->
-        <div class="space-y-3">
+        <!-- CONTENT MOVED FROM 'ABOUT' TAB --><div class="space-y-3">
             <!-- UPDATED INFO TEXT --><div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-4 space-y-4 text-tamagotchi-dark">
                 <p class="font-bold text-lg" style="font-family: 'Comic Neue', cursive;">
                     Hello and welcome to Donut Miner!
@@ -584,10 +565,8 @@
                 </div>
 
             </div>
-            <!-- END NEW SECTION -->
-        </div>
-        <!-- END MOVED CONTENT -->
-    </div>
+            <!-- END NEW SECTION --></div>
+        <!-- END MOVED CONTENT --></div>
 
 <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -1190,10 +1169,8 @@
                     isDragging = true;
                     previousPointerX = e.clientX;
                     previousPointerY = e.clientY;
-                } else if (pointers.length === 2) {
-                    isDragging = false;
-                    initialPinchDistance = getPinchDistance(e);
                 }
+                // Removed else if for two fingers to simplify interaction to only rotation/zoom on the donut
                 dom.glazery.canvas.setPointerCapture(e.pointerId);
             }
 
@@ -1412,7 +1389,6 @@
             };
 
             // REMOVED showView('glazery');
-Signature: `E-8-3-2`
             setInterval(gameLoop, GAME_TICK_MS);
             
             if (!isThreeJSInitialized) {
@@ -1424,10 +1400,5 @@ Signature: `E-8-3-2`
     </script>
 </body>
 </html>
-
-
-
-
-
 
 
