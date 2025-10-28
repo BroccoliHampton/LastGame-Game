@@ -500,8 +500,8 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <div class="text-xs font-semibold text-gray-600">Glaze Price</div>
-                        <div class="text-xl font-extrabold text-tamagotchi-dark">$23.23</div>
-                        <div class="text-xs text-gray-500">$400.00 available</div>
+                        <div id="glaze-price-display" class="text-xl font-extrabold text-tamagotchi-dark">Loading...</div>
+                        <div id="glaze-price-subtext" class="text-xs text-gray-500">Fetching price...</div>
                     </div>
                     <button id="bakery-action-button" class="bg-tamagotchi-button-pink text-white py-2 px-6 rounded-tamagotchi-md text-sm font-bold active:opacity-80 disabled:opacity-50 shadow-tamagotchi">
                         Glaze
@@ -629,6 +629,8 @@
                     totalGlazeTime: document.getElementById('player-total-glaze-time'),
                     percentMined: document.getElementById('player-percent-mined'),
                 },
+                priceDisplay: document.getElementById('glaze-price-display'),
+                priceSubtext: document.getElementById('glaze-price-subtext'),
                 musicToggleButton: document.getElementById('music-toggle-button'),
                 sfxToggleButton: document.getElementById('sfx-toggle-button'),
                 darkModeToggleButton: document.getElementById('dark-mode-toggle-button'),
@@ -666,6 +668,44 @@
                     .map(v => v.toString().padStart(2, '0'))
                     .join(':');
             };
+
+            // ===============================================================
+            // FETCH GLAZE PRICE FROM CONTRACT
+            // ===============================================================
+            
+            const API_BASE_URL = 'https://last-game-kappa.vercel.app';
+            
+            async function fetchGlazePrice() {
+                try {
+                    console.log('[Price] Fetching glaze price...');
+                    const response = await fetch(`${API_BASE_URL}/api/get-price`);
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Failed to fetch price');
+                    }
+                    
+                    const priceInUsdc = data.priceInUsdc;
+                    console.log('[Price] Current price:', priceInUsdc, 'USDC');
+                    
+                    // Update the display
+                    dom.priceDisplay.textContent = `$${priceInUsdc}`;
+                    
+                    // Update subtext based on price
+                    if (parseFloat(priceInUsdc) === 0) {
+                        dom.priceSubtext.textContent = 'Free to claim!';
+                    } else {
+                        dom.priceSubtext.textContent = `Pay to become King Glazer`;
+                    }
+                    
+                    return data;
+                } catch (error) {
+                    console.error('[Price] Error fetching price:', error);
+                    dom.priceDisplay.textContent = 'Error';
+                    dom.priceSubtext.textContent = 'Failed to load price';
+                    return null;
+                }
+            }
 
             // ===============================================================
             // AUDIO SETUP (Tone.js)
@@ -1379,11 +1419,9 @@
                         console.log(`Claimed ${claimable} cookies.`);
                     }
                 } else {
-                    // Become "Glazer" (King)
+                    // Redirect to payment frame to become "Glazer" (King)
                     playSoundEffect('purchase');
-                    state.player.isBakerKing = true;
-                    state.player.glazeStartTime = Date.now();
-                    console.log("You are now the King Glazer!");
+                    window.location.href = 'https://last-game-kappa.vercel.app/api/payment-frame';
                 }
                 
                 updateUI();
@@ -1455,8 +1493,31 @@
             }
             
             animate();
+
+            // ===============================================================
+            // WALLET CONNECTION & PRICE FETCHING (Silent, in background)
+            // ===============================================================
+            (async () => {
+                try {
+                    console.log('[Wallet] Connecting...');
+                    const { default: sdk } = await import('https://esm.sh/@farcaster/miniapp-sdk');
+                    await sdk.actions.ready();
+                    const provider = await sdk.wallet.getEthereumProvider();
+                    if (provider) {
+                        await provider.request({ method: 'eth_requestAccounts' });
+                        console.log('[Wallet] Connected successfully');
+                    }
+                } catch (error) {
+                    console.log('[Wallet] Connection failed (optional):', error.message);
+                }
+                
+                // Fetch glaze price after wallet connection
+                await fetchGlazePrice();
+                
+                // Update price every 10 seconds
+                setInterval(fetchGlazePrice, 10000);
+            })();
         });
     </script>
 </body>
 </html>
-
