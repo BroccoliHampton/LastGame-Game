@@ -1475,7 +1475,7 @@
         // =============================================================================
 
         // --- CONFIGURATION ---
-        // IMPORTANT: Update this to your API deployment URL (not the game URL)
+        // IMPORTANT: This points to your API deployment (not the game URL)
         const API_BASE_URL = 'https://last-game-kappa.vercel.app'; // Your API Vercel deployment
         const GAME_REFRESH_INTERVAL = 10000; // Refresh every 10 seconds
 
@@ -1550,32 +1550,63 @@
             }
         }
 
-        // --- GET USER ADDRESS FROM FARCASTER SDK ---
+        // --- GET USER ADDRESS FROM FARCASTER CONTEXT ---
         async function getUserAddress() {
             try {
-                console.log('[Contract] Attempting to get user address from Farcaster SDK...');
+                console.log('[Contract] Attempting to get user from Farcaster context...');
                 
-                // Import Farcaster SDK
-                const { default: sdk } = await import('https://esm.sh/@farcaster/miniapp-sdk');
-                await sdk.actions.ready();
-                
-                // Get Ethereum provider
-                const provider = await sdk.wallet.getEthereumProvider();
-                if (!provider) {
-                    console.log('[Contract] No Ethereum provider available');
-                    return null;
+                // Method 1: Check for Farcaster frame context (injected by Farcaster)
+                if (window.frameContext && window.frameContext.user) {
+                    const fid = window.frameContext.user.fid;
+                    console.log('[Contract] User FID from frameContext:', fid);
+                    
+                    // Get address from Farcaster via API
+                    try {
+                        const response = await fetch(`https://api.neynar.com/v2/farcaster/user/bulk?fids=${fid}`, {
+                            headers: {
+                                'api_key': 'NEYNAR_ONCHAIN_KIT' // Public key for basic lookups
+                            }
+                        });
+                        const data = await response.json();
+                        if (data.users && data.users[0] && data.users[0].verified_addresses && data.users[0].verified_addresses.eth_addresses) {
+                            const address = data.users[0].verified_addresses.eth_addresses[0];
+                            console.log('[Contract] User address from Neynar:', address);
+                            contractData.userAddress = address;
+                            return address;
+                        }
+                    } catch (e) {
+                        console.log('[Contract] Could not fetch address from Neynar:', e.message);
+                    }
                 }
                 
-                // Request accounts
-                const accounts = await provider.request({ method: 'eth_requestAccounts' });
-                const address = accounts[0];
+                // Method 2: Try Farcaster SDK as fallback
+                console.log('[Contract] Trying Farcaster SDK as fallback...');
+                try {
+                    const sdkImport = await Promise.race([
+                        import('https://esm.sh/@farcaster/miniapp-sdk'),
+                        new Promise((_, reject) => setTimeout(() => reject(new Error('SDK timeout')), 3000))
+                    ]);
+                    
+                    const sdk = sdkImport.default;
+                    await sdk.actions.ready();
+                    
+                    const provider = await sdk.wallet.getEthereumProvider();
+                    if (provider) {
+                        const accounts = await provider.request({ method: 'eth_requestAccounts' });
+                        const address = accounts[0];
+                        console.log('[Contract] User address from SDK:', address);
+                        contractData.userAddress = address;
+                        return address;
+                    }
+                } catch (sdkError) {
+                    console.log('[Contract] SDK fallback failed:', sdkError.message);
+                }
                 
-                console.log('[Contract] User address obtained:', address);
-                contractData.userAddress = address;
-                return address;
+                console.log('[Contract] Could not get user address - continuing without it');
+                return null;
                 
             } catch (error) {
-                console.log('[Contract] Could not get user address:', error.message);
+                console.log('[Contract] Error getting user address:', error.message);
                 return null;
             }
         }
@@ -1674,19 +1705,40 @@
         async function initContractIntegration() {
             console.log('[Contract] Initializing contract integration...');
             
-            // Get user address
-            const userAddress = await getUserAddress();
-            
-            // Fetch initial game state
-            await fetchGameState(userAddress);
-            
-            // Update UI
-            updateUIFromContract();
-            
-            // Start auto refresh
-            startAutoRefresh();
-            
-            console.log('[Contract] Contract integration initialized');
+            try {
+                // Get user address (may fail if not in Farcaster)
+                const userAddress = await getUserAddress();
+                
+                // Fetch initial game state (should always work)
+                console.log('[Contract] Fetching game state...');
+                const gameState = await fetchGameState(userAddress);
+                
+                if (!gameState) {
+                    console.error('[Contract] Failed to fetch game state - will retry');
+                    // Try again without user address
+                    await fetchGameState(null);
+                }
+                
+                // Update UI
+                updateUIFromContract();
+                
+                // Start auto refresh
+                startAutoRefresh();
+                
+                console.log('[Contract] Contract integration initialized successfully');
+            } catch (error) {
+                console.error('[Contract] Error during initialization:', error);
+                console.log('[Contract] Will continue with limited functionality');
+                
+                // Try to at least fetch game state without user
+                try {
+                    await fetchGameState(null);
+                    updateUIFromContract();
+                    startAutoRefresh();
+                } catch (e) {
+                    console.error('[Contract] Critical error - cannot fetch game state:', e);
+                }
+            }
         }
 
         // --- OVERRIDE GLAZE BUTTON HANDLER ---
