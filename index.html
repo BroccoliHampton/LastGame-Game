@@ -434,33 +434,49 @@
     <main class="flex-grow flex flex-col px-3 pt-4 pb-1 overflow-y-auto max-w-lg mx-auto w-full"> <!-- Added max-w-lg mx-auto w-full for content centering --><div class="flex justify-between items-center mb-2">
             <div class="flex flex-col">
                 <h1 class="text-3xl font-black text-tamagotchi-pink-dark" style="font-family: 'Luckiest Guy', cursive;">Donut Miner</h1>
+                
+                <!-- NEW: Profile Name Section (MOVED & SHRUNK) --><div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-2 flex items-center space-x-3 mt-1">
+                    <div class="w-8 h-8 rounded-tamagotchi-md bg-tamagotchi-button-teal flex items-center justify-center text-lg font-bold text-white"> <!-- Shrunk from w-10 h-10 -->
+                        <span>👤</span> <!-- Simple profile icon -->
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-500 font-semibold">Profile</div>
+                        <div id="player-profile-name" class="font-extrabold text-sm truncate text-tamagotchi-dark">DonutEnthusiast_123</div>
+                    </div>
+                </div>
+                <!-- END: Profile Name Section -->
+
             </div>
-            <div class="flex space-x-2">
+            <div class="flex space-x-2 self-start"> <!-- MODIFIED: Added self-start -->
                 <button id="dark-mode-toggle-button" class="bg-tamagotchi-button-teal text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
                     🌙
                 </button>
-                <!-- Updated Audio Button --><button id="music-toggle-button" class="bg-tamagotchi-button-pink text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
+                <button id="music-toggle-button" class="bg-tamagotchi-button-pink text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
                     🔇
                 </button>
-                <!-- NEW SFX Button --><button id="sfx-toggle-button" class="bg-tamagotchi-button-teal text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
+                <button id="sfx-toggle-button" class="bg-tamagotchi-button-teal text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
                     🔊
+                </button>
+                <!-- NEW BUTTON -->
+                <button id="info-button" class="bg-tamagotchi-button-pink text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
+                    ❓
                 </button>
             </div>
         </div>
 
         <!-- =============================================================== --><!-- GLAZERY VIEW (Restored)                                       --><!-- =============================================================== --><div id="view-glazery" class="flex-grow flex flex-col">
-            <h2 class="text-2xl font-black text-tamagotchi-pink-dark mb-1">Glazery</h2>
+            <!-- REMOVED: Glazery h2 Subtitle --><!-- REMOVED: Profile Name Section -->
             
             <p class="text-sm text-gray-500 mb-2" style="font-family: 'Comic Neue', cursive;">
                 Pay the Glaze Price to become KING GLAZER and earn 100% of $DONUT emissions until someone takes the spot after you.
             </p>
             <div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-2 grid grid-cols-3 gap-2">
                 <div class="text-center">
-                    <div class="text-xs text-gray-500 font-semibold">Glazer</div>
+                    <div class="text-xs text-gray-500 font-semibold">King Glazer</div>
                     <div id="bakery-king-status" class="font-extrabold text-sm truncate text-tamagotchi-dark">None</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-xs text-gray-500 font-semibold">Donuts/s</div>
+                    <div class="text-xs text-gray-500 font-semibold">Glazed</div>
                     <div class="font-extrabold text-sm text-tamagotchi-dark">🍩 <span id="bakery-cps">0.00</span></div>
                 </div>
                 <div class="text-center">
@@ -469,22 +485,9 @@
                 </div>
             </div>
 
-            <!-- NEW: Second Row of Stats --><div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-2 grid grid-cols-3 gap-2 mt-2">
-                <div class="text-center">
-                    <div class="text-xs text-gray-500 font-semibold">Donut Balance</div>
-                    <div id="player-donut-balance" class="font-extrabold text-sm truncate text-tamagotchi-dark">0</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-xs text-gray-500 font-semibold">Total Glaze Time</div>
-                    <div id="player-total-glaze-time" class="font-extrabold text-sm text-tamagotchi-dark">00:00:00</div>
-                </div>
-                <div class="text-center">
-                    <div class="text-xs text-gray-500 font-semibold">% Mined</div>
-                    <div class="font-extrabold text-sm text-tamagotchi-dark"><span id="player-percent-mined">0.00</span>%</div>
-                </div>
-            </div>
+            <!-- MOVED: Second Row of Stats DIV was here -->
 
-            <div id="top-ticker" class="ticker-wrap" style="margin-bottom: 4px;">
+            <div id="top-ticker" class="ticker-wrap" style="margin-bottom: 4px; margin-top: 8px;"> <!-- MODIFIED: Added margin-top -->
                 <div class="ticker-move">
                     <!-- UPDATED TEXT --><span>Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour. ... Glaze price doubles each time a new Glazer takes over, and price cools down to $0 over 1 hour. ... </span>
                 </div>
@@ -507,18 +510,45 @@
                 <div class="flex justify-between items-center">
                     <div>
                         <div class="text-xs font-semibold text-gray-600">Glaze Price</div>
-                        <div id="glaze-price-display" class="text-xl font-extrabold text-tamagotchi-dark">Loading...</div>
-                        <div id="glaze-price-subtext" class="text-xs text-gray-500">Fetching price...</div>
+                        <div class="text-xl font-extrabold text-tamagotchi-dark">$23.23</div>
+                        <div class="text-xs text-gray-500">$400.00 available</div>
                     </div>
                     <button id="bakery-action-button" class="bg-tamagotchi-button-pink text-white py-2 px-6 rounded-tamagotchi-md text-sm font-bold active:opacity-80 disabled:opacity-50 shadow-tamagotchi">
                         Glaze
                     </button>
                 </div>
             </div>
+
+            <!-- NEW: Second Row of Stats --><div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-2 grid grid-cols-3 gap-2 mt-2">
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 font-semibold">Donut Balance</div>
+                    <div id="player-donut-balance" class="font-extrabold text-sm truncate text-tamagotchi-dark">0</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 font-semibold">Total Glaze Time</div>
+                    <div id="player-total-glaze-time" class="font-extrabold text-sm text-tamagotchi-dark">00:00:00</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-gray-500 font-semibold">% Mined</div>
+                    <div class="font-extrabold text-sm text-tamagotchi-dark"><span id="player-percent-mined">0.00</span>%</div>
+                </div>
+            </div>
+
         </div>
 
-        <!-- =============================================================== --><!-- ABOUT VIEW (Restored)                                         --><!-- =============================================================== --><div id="view-about" class="hidden flex-grow flex flex-col space-y-3">
+        <!-- =============================================================== --><!-- ABOUT VIEW (Restored)                                         --><!-- =============================================================== --><!-- REMOVED view-about DIV --><!-- BAKERY VIEW REMOVED --></main>
 
+    <!-- REMOVED nav ELEMENT -->
+
+    <!-- NEW INFO MODAL -->
+    <div id="info-modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+    <div id="info-modal" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-4 z-50 hidden w-11/12 max-w-xs text-tamagotchi-dark overflow-y-auto" style="max-height: 90vh;">
+        <div class="flex justify-between items-center mb-2">
+            <h3 class="text-xl font-bold text-tamagotchi-pink-dark">Info</h3>
+            <button id="info-modal-close" class="text-2xl font-bold text-gray-500 hover:text-tamagotchi-pink-dark">&times;</button>
+        </div>
+        <!-- CONTENT MOVED FROM 'ABOUT' TAB -->
+        <div class="space-y-3">
             <!-- UPDATED INFO TEXT --><div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-4 space-y-4 text-tamagotchi-dark">
                 <p class="font-bold text-lg" style="font-family: 'Comic Neue', cursive;">
                     Hello and welcome to Donut Miner!
@@ -535,36 +565,29 @@
                 
                 <div class="flex justify-between items-center">
                     <span class="text-sm font-semibold text-gray-600">Total Donut Supply</span>
-                    <span id="about-total-supply" class="font-extrabold text-tamagotchi-dark">🍩 0</span>
+                    <span id="modal-total-supply" class="font-extrabold text-tamagotchi-dark">🍩 0</span>
                 </div>
                 
                 <div class="flex justify-between items-center">
                     <span class="text-sm font-semibold text-gray-600">Total % Mined</span>
-                    <span id="about-percent-mined" class="font-extrabold text-tamagotchi-dark">0.00%</span>
+                    <span id="modal-percent-mined" class="font-extrabold text-tamagotchi-dark">0.00%</span>
                 </div>
 
                 <div class="flex justify-between items-center">
                     <span class="text-sm font-semibold text-gray-600">Time Until Halving</span>
-                    <span id="about-next-halving" class="font-extrabold text-tamagotchi-dark">--:--:--</span>
+                    <span id="modal-next-halving" class="font-extrabold text-tamagotchi-dark">--:--:--</span>
                 </div>
 
                 <div class="flex justify-between items-center">
                     <span class="text-sm font-semibold text-gray-600">Total Miners</span>
-                    <span id="about-total-miners" class="font-extrabold text-tamagotchi-dark">👤 0</span>
+                    <span id="modal-total-miners" class="font-extrabold text-tamagotchi-dark">👤 0</span>
                 </div>
 
             </div>
-            <!-- END NEW SECTION --></div>
-        
-        <!-- BAKERY VIEW REMOVED --></main>
-
-    <nav class="grid grid-cols-2 gap-2 p-1 border-t border-tamagotchi-subtle bg-tamagotchi-card shadow-lg max-w-lg mx-auto w-full"> <!-- Added max-w-lg mx-auto w-full --><button id="nav-glazery" class="nav-icon active flex flex-col items-center justify-center p-2 rounded-tamagotchi-md">
-            <span>🍩</span>
-        </button>
-        <button id="nav-about" class="nav-icon flex flex-col items-center justify-center p-2 rounded-tamagotchi-md">
-            <span>ℹ️</span>
-        </button>
-    </nav>
+            <!-- END NEW SECTION -->
+        </div>
+        <!-- END MOVED CONTENT -->
+    </div>
 
 <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -593,7 +616,7 @@
                 },
                 // UI State
                 ui: {
-                    activeView: 'glazery',
+                    // REMOVED activeView
                     isDarkMode: false,
                     isSfxMuted: false
                 }
@@ -603,20 +626,9 @@
             // DOM ELEMENTS
             // ===============================================================
             const dom = {
-                views: {
-                    glazery: document.getElementById('view-glazery'),
-                    about: document.getElementById('view-about'),
-                },
-                aboutPage: {
-                    totalSupply: document.getElementById('about-total-supply'),
-                    percentMined: document.getElementById('about-percent-mined'),
-                    nextHalving: document.getElementById('about-next-halving'),
-                    totalMiners: document.getElementById('about-total-miners'),
-                },
-                nav: {
-                    glazery: document.getElementById('nav-glazery'),
-                    about: document.getElementById('nav-about'),
-                },
+                // REMOVED views property
+                // REMOVED aboutPage property
+                // REMOVED nav property
                 glazery: {
                     kingStatus: document.getElementById('bakery-king-status'),
                     cps: document.getElementById('bakery-cps'),
@@ -631,11 +643,21 @@
                     totalGlazeTime: document.getElementById('player-total-glaze-time'),
                     percentMined: document.getElementById('player-percent-mined'),
                 },
-                priceDisplay: document.getElementById('glaze-price-display'),
-                priceSubtext: document.getElementById('glaze-price-subtext'),
                 musicToggleButton: document.getElementById('music-toggle-button'),
                 sfxToggleButton: document.getElementById('sfx-toggle-button'),
-                darkModeToggleButton: document.getElementById('dark-mode-toggle-button')
+                darkModeToggleButton: document.getElementById('dark-mode-toggle-button'),
+                // NEW
+                infoButton: document.getElementById('info-button'),
+                infoModal: document.getElementById('info-modal'),
+                infoModalOverlay: document.getElementById('info-modal-overlay'),
+                infoModalClose: document.getElementById('info-modal-close'),
+                // NEW: Modal info elements
+                modalInfo: {
+                    totalSupply: document.getElementById('modal-total-supply'),
+                    percentMined: document.getElementById('modal-percent-mined'),
+                    nextHalving: document.getElementById('modal-next-halving'),
+                    totalMiners: document.getElementById('modal-total-miners'),
+                }
             };
 
             // ===============================================================
@@ -658,44 +680,6 @@
                     .map(v => v.toString().padStart(2, '0'))
                     .join(':');
             };
-
-            // ===============================================================
-            // FETCH GLAZE PRICE FROM CONTRACT
-            // ===============================================================
-            
-            const API_BASE_URL = 'https://last-game-kappa.vercel.app';
-            
-            async function fetchGlazePrice() {
-                try {
-                    console.log('[Price] Fetching glaze price...');
-                    const response = await fetch(`${API_BASE_URL}/api/get-price`);
-                    const data = await response.json();
-                    
-                    if (!response.ok) {
-                        throw new Error(data.error || 'Failed to fetch price');
-                    }
-                    
-                    const priceInUsdc = data.priceInUsdc;
-                    console.log('[Price] Current price:', priceInUsdc, 'USDC');
-                    
-                    // Update the display
-                    dom.priceDisplay.textContent = `$${priceInUsdc}`;
-                    
-                    // Update subtext based on price
-                    if (parseFloat(priceInUsdc) === 0) {
-                        dom.priceSubtext.textContent = 'Free to claim!';
-                    } else {
-                        dom.priceSubtext.textContent = `Pay to become King Glazer`;
-                    }
-                    
-                    return data;
-                } catch (error) {
-                    console.error('[Price] Error fetching price:', error);
-                    dom.priceDisplay.textContent = 'Error';
-                    dom.priceSubtext.textContent = 'Failed to load price';
-                    return null;
-                }
-            }
 
             // ===============================================================
             // AUDIO SETUP (Tone.js)
@@ -880,6 +864,22 @@
                     body.classList.remove('dark');
                     dom.darkModeToggleButton.textContent = '🌙';
                 }
+            }
+
+            // ===============================================================
+            // INFO MODAL (NEW)
+            // ===============================================================
+            function showInfoModal() {
+                playSoundEffect('crunch');
+                dom.infoModal.classList.remove('hidden');
+                dom.infoModalOverlay.classList.remove('hidden');
+            }
+
+            function hideInfoModal() {
+                // No sound on close, feels better
+                // playSoundEffect('crunch'); 
+                dom.infoModal.classList.add('hidden');
+                dom.infoModalOverlay.classList.add('hidden');
             }
 
             // ===============================================================
@@ -1154,8 +1154,8 @@
             function animate() {
                 requestAnimationFrame(animate);
                 
-                // Render Glazery if active
-                if (state.ui.activeView === 'glazery' && donutGroup && renderer) {
+                // Render Glazery if active - REMOVED activeView check
+                if (donutGroup && renderer) {
                     // MODIFIED: Always spin based on donutSpinSpeed, remove isDragging check
                     donutGroup.rotation.y += donutSpinSpeed; 
                     
@@ -1312,55 +1312,26 @@
                     dom.glazery.actionButton.disabled = false;
                 }
                 
-                // Update About Page Stats
-                if (state.ui.activeView === 'about') {
-                    // const { totalDonutSupply, totalCookiesCreated, nextHalvingAt, totalMiners } = state.global; // MOVED UP
-                    
-                    dom.aboutPage.totalSupply.textContent = `🍩 ${format(totalDonutSupply)}`;
-                    
-                    // const percentMined = totalDonutSupply > 0 ? (totalCookiesCreated / totalDonutSupply) * 100 : 0; // MOVED UP
-                    dom.aboutPage.percentMined.textContent = `${formatDecimal(percentMined)}%`;
+                // NEW: Calculate halving time (used in two places)
+                const blocksRemaining = nextHalvingAt - totalCookiesCreated;
+                const secondsRemaining = Math.max(0, Math.floor(blocksRemaining * (GAME_TICK_MS / 100))); 
+                const hours = Math.floor(secondsRemaining / 3600);
+                const minutes = Math.floor((secondsRemaining % 3600) / 60);
+                const seconds = secondsRemaining % 60;
+                const halvingTimeText = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
 
-                    const blocksRemaining = nextHalvingAt - totalCookiesCreated;
-                    const secondsRemaining = Math.max(0, Math.floor(blocksRemaining * (GAME_TICK_MS / 100))); 
-                    const hours = Math.floor(secondsRemaining / 3600);
-                    const minutes = Math.floor((secondsRemaining % 3600) / 60);
-                    const seconds = secondsRemaining % 60;
-                    dom.aboutPage.nextHalving.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-
-                    dom.aboutPage.totalMiners.textContent = `👤 ${format(totalMiners)}`;
+                // Update About Page Stats - REMOVED this entire block
+                
+                // NEW: Update Modal Stats (always, so it's fresh when opened)
+                if (dom.modalInfo.totalSupply) { // Check if elements exist
+                    dom.modalInfo.totalSupply.textContent = `🍩 ${format(totalDonutSupply)}`;
+                    dom.modalInfo.percentMined.textContent = `${formatDecimal(percentMined)}%`;
+                    dom.modalInfo.nextHalving.textContent = halvingTimeText;
+                    dom.modalInfo.totalMiners.textContent = `👤 ${format(totalMiners)}`;
                 }
             };
             
-
-            const showView = (viewName) => {
-                // Hide all views
-                for (const key in dom.views) {
-                    dom.views[key].classList.add('hidden');
-                }
-                // Deactivate all nav icons
-                for (const key in dom.nav) {
-                    dom.nav[key].classList.remove('active');
-                }
-
-                // Show selected view
-                if (dom.views[viewName]) {
-                    dom.views[viewName].classList.remove('hidden');
-                    state.ui.activeView = viewName;
-                }
-                // Activate selected nav icon
-                if (dom.nav[viewName]) {
-                    dom.nav[viewName].classList.add('active');
-                }
-                
-                if (viewName === 'glazery' && !isThreeJSInitialized) {
-                    setTimeout(initThreeJS, 0);
-                }
-
-                updateUI();
-                
-                setTimeout(onResize, 50);
-            };
+            // REMOVED showView function
 
             // ===============================================================
             // GAME ACTIONS (NEW SECTION)
@@ -1380,9 +1351,11 @@
                         console.log(`Claimed ${claimable} cookies.`);
                     }
                 } else {
-                    // Redirect to payment frame to become "Glazer" (King)
+                    // Become "Glazer" (King)
                     playSoundEffect('purchase');
-                    window.location.href = 'https://last-game-kappa.vercel.app/api/payment-frame';
+                    state.player.isBakerKing = true;
+                    state.player.glazeStartTime = Date.now();
+                    console.log("You are now the King Glazer!");
                 }
                 
                 updateUI();
@@ -1412,9 +1385,7 @@
             // INITIALIZATION
             // ===============================================================
             
-            dom.nav.glazery.onclick = () => { playSoundEffect('crunch'); showView('glazery'); };
-            dom.nav.about.onclick = () => { playSoundEffect('crunch'); showView('about'); };
-
+            // REMOVED nav listeners
             dom.glazery.actionButton.onclick = handleMinerAction;
             dom.musicToggleButton.onclick = toggleMusic;
             dom.sfxToggleButton.onclick = toggleSfx;
@@ -1427,6 +1398,11 @@
                 changeGlazeColor();
             };
 
+            // NEW MODAL LISTENERS
+            dom.infoButton.onclick = showInfoModal;
+            dom.infoModalClose.onclick = hideInfoModal;
+            dom.infoModalOverlay.onclick = hideInfoModal;
+
             dom.glazery.zoomSlider.oninput = () => {
                 if (!isThreeJSInitialized) return;
                 const newZ = parseFloat(dom.glazery.zoomSlider.value);
@@ -1435,7 +1411,8 @@
                 currentCameraZ = newZ;
             };
 
-            showView('glazery');
+            // REMOVED showView('glazery');
+Signature: `E-8-3-2`
             setInterval(gameLoop, GAME_TICK_MS);
             
             if (!isThreeJSInitialized) {
@@ -1443,31 +1420,14 @@
             }
             
             animate();
-
-            // ===============================================================
-            // WALLET CONNECTION (Silent, in background)
-            // ===============================================================
-            (async () => {
-                try {
-                    console.log('[Wallet] Connecting...');
-                    const { default: sdk } = await import('https://esm.sh/@farcaster/miniapp-sdk');
-                    await sdk.actions.ready();
-                    const provider = await sdk.wallet.getEthereumProvider();
-                    if (provider) {
-                        await provider.request({ method: 'eth_requestAccounts' });
-                        console.log('[Wallet] Connected successfully');
-                    }
-                } catch (error) {
-                    console.log('[Wallet] Connection failed (optional):', error.message);
-                }
-                
-                // Fetch glaze price after wallet connection
-                await fetchGlazePrice();
-                
-                // Update price every 10 seconds
-                setInterval(fetchGlazePrice, 10000);
-            })();
         });
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
