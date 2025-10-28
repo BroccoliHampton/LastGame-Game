@@ -111,11 +111,9 @@
         }
 
         /* Glaze color button styling */
-        #glaze-color-button {
-            position: absolute;
+        .color-cycle-button { /* Applied to both glaze and sprinkle buttons */
+            position: absolute; /* Will be positioned relative to parent */
             bottom: 10px;
-            right: 10px;
-            z-index: 30; /* Ensure it's above other elements in the container */
             width: 40px; /* Make it a square */
             height: 40px;
             display: flex;
@@ -128,11 +126,23 @@
             background-color: #f0f0f0; /* Default light background */
             box-shadow: 0px 2px 5px rgba(0,0,0,0.2);
             transition: transform 0.1s ease-in-out, background-color 0.2s;
+            z-index: 30; /* Ensure it's above other elements in the container */
         }
-        #glaze-color-button:active {
+        .color-cycle-button:active {
             transform: translateY(1px);
             box-shadow: none;
         }
+        /* Specific positioning */
+        #glaze-color-button {
+            right: 10px;
+        }
+        #sprinkle-color-button { /* New button */
+            right: 58px; /* 10px (glaze) + 40px (button width) + 8px (gap) */
+        }
+        #donut-base-color-button { /* NEW */
+            right: 106px; /* 58px (sprinkle) + 40px (button width) + 8px (gap) */
+        }
+
 
         /* =============================================================== */
         /* GLITCHY STATIC TV EFFECT (Pale Butter Yellow Background)      */
@@ -363,7 +373,7 @@
         }
         
         /* Color cycle button */
-        body.dark #glaze-color-button { /* Changed from #app-shell.dark to body.dark */
+        body.dark .color-cycle-button { /* Changed from #app-shell.dark to body.dark */
             background-color: #3D2B1F;
             border-color: #4A3A2A;
             color: #F5E6C1; /* Light text */
@@ -441,24 +451,19 @@
                     </div>
                 </div>
                 <!-- END: Profile Name Section --></div>
-            <div class="flex space-x-2 self-start"> <!-- MODIFIED: Added self-start --><button id="dark-mode-toggle-button" class="bg-tamagotchi-button-teal text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
-                    🌙
+            <div class="grid grid-cols-2 gap-1 self-start"> <!-- MODIFIED: Changed to grid --><!-- Row 1 --><button id="dark-mode-toggle-button" class="bg-tamagotchi-button-teal text-white text-base w-8 h-8 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80"> <!-- MODIFIED: Size/Text -->🌙
                 </button>
-                <button id="music-toggle-button" class="bg-tamagotchi-button-pink text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
-                    🔇
+                <button id="info-button" class="bg-tamagotchi-button-pink text-white text-base w-8 h-8 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80"> <!-- MODIFIED: Size/Text & MOVED -->❓
                 </button>
-                <button id="sfx-toggle-button" class="bg-tamagotchi-button-teal text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
-                    🔊
+                <!-- Row 2 --><button id="music-toggle-button" class="bg-tamagotchi-button-pink text-white text-base w-8 h-8 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80"> <!-- MODIFIED: Size/Text -->🔇
                 </button>
-                <!-- NEW BUTTON --><button id="info-button" class="bg-tamagotchi-button-pink text-white text-lg w-10 h-10 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80">
-                    ❓
+                <button id="sfx-toggle-button" class="bg-tamagotchi-button-teal text-white text-base w-8 h-8 flex items-center justify-center rounded-tamagotchi-md shadow-tamagotchi active:opacity-80"> <!-- MODIFIED: Size/Text -->🔊
                 </button>
             </div>
         </div>
 
         <!-- =============================================================== --><!-- GLAZERY VIEW (Restored)                                       --><!-- =============================================================== --><div id="view-glazery" class="flex-grow flex flex-col">
-            <!-- REMOVED: Glazery h2 Subtitle --><!-- REMOVED: Profile Name Section -->
-            <div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-2 grid grid-cols-3 gap-2">
+            <!-- REMOVED: Glazery h2 Subtitle --><!-- REMOVED: Profile Name Section --><div class="bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi p-2 grid grid-cols-3 gap-2">
                 <div class="text-center">
                     <div class="text-xs text-gray-500 font-semibold">King Glazer</div>
                     <div id="bakery-king-status" class="font-extrabold text-sm truncate text-tamagotchi-dark">None</div>
@@ -481,7 +486,9 @@
             <div id="cookie-rain-container" class="relative h-64 flex items-center justify-center overflow-hidden bg-tamagotchi-card rounded-tamagotchi-lg shadow-tamagotchi glitch-static">
                 <div class="falling-snow"></div>
                 <canvas id="cookie-canvas"></canvas>
-                <button id="glaze-color-button" class="shadow-tamagotchi bg-white text-tamagotchi-dark">🎨</button>
+                <button id="glaze-color-button" class="color-cycle-button shadow-tamagotchi bg-white text-tamagotchi-dark">🎨</button>
+                <button id="sprinkle-color-button" class="color-cycle-button shadow-tamagotchi bg-white text-tamagotchi-dark">🌈</button> <!-- NEW: Sprinkle color button -->
+                <button id="donut-base-color-button" class="color-cycle-button shadow-tamagotchi bg-white text-tamagotchi-dark">🍩</button> <!-- NEW: Donut base color button -->
                 <!-- NEW: Zoom Slider --><input id="glazery-zoom-slider" type="range" class="zoom-slider">
             </div>
 
@@ -616,6 +623,8 @@
                     canvas: document.getElementById('cookie-canvas'),
                     rainContainer: document.getElementById('cookie-rain-container'),
                     glazeColorButton: document.getElementById('glaze-color-button'),
+                    sprinkleColorButton: document.getElementById('sprinkle-color-button'), // NEW
+                    donutBaseColorButton: document.getElementById('donut-base-color-button'), // NEW
                     zoomSlider: document.getElementById('glazery-zoom-slider'),
                     // NEW: Second row stats
                     donutBalance: document.getElementById('player-donut-balance'),
@@ -865,7 +874,7 @@
             // 3D GLAZERY SETUP
             // ===============================================================
 
-            let scene, camera, renderer, donutGroup, glazeMaterial;
+            let scene, camera, renderer, donutGroup, glazeMaterial, donutMaterial, sprinkleMeshes = []; // MODIFIED: Added donutMaterial, sprinkleMeshes
             let isDragging = false;
             let previousPointerX = 0;
             let previousPointerY = 0;
@@ -888,6 +897,25 @@
                 0x000000  // Black
             ];
             let currentGlazeColorIndex = 0;
+
+            const donutBaseColors = [ // NEW
+                0x5C3317, // Original Brown
+                0xDEB887, // BurlyWood (Lighter)
+                0x3D2B1F, // Dark Brown
+                0xF5DEB3, // Wheat
+                0xFFC0CB  // Pink (for fun)
+            ];
+            let currentDonutBaseColorIndex = 0;
+
+            const sprinkleColorSets = [ // NEW: Sprinkle color sets
+                [0xFF0000, 0xFF7F00, 0xFFFF00, 0x00FF00, 0x0000FF, 0x4B0082, 0x9400D3], // Rainbow
+                [0xFFFFFF, 0xF0F0F0, 0xE0E0E0], // White/Silver
+                [0x000000, 0x333333, 0x666666], // Black/Grey
+                [0xFFC0CB, 0xFF9AA2, 0xFFDDE1], // Pink Tones
+                [0x87CEEB, 0xADD8E6, 0xB0E0E6], // Blue Tones
+                [0xDAA520, 0xB8860B, 0xFFD700]  // Gold Tones
+            ];
+            let currentSprinkleColorSetIndex = 0;
 
             function createCrackTexture(size = 1024) {
                 const canvas = document.createElement('canvas');
@@ -988,8 +1016,8 @@
                 speckleTexture.wrapS = speckleTexture.wrapT = THREE.RepeatWrapping;
                 speckleTexture.repeat.set(3, 3);
 
-                const donutMaterial = new THREE.MeshStandardMaterial({ 
-                    color: 0x5C3317,
+                donutMaterial = new THREE.MeshStandardMaterial({ // MODIFIED: Assigned to global var
+                    color: donutBaseColors[currentDonutBaseColorIndex], // MODIFIED: Use color from array
                     roughness: 0.8,
                     metalness: 0.05,
                     map: speckleTexture,
@@ -1062,15 +1090,41 @@
                 glaze.position.z = 0.05; 
                 donutGroup.add(glaze);
 
-                // Sprinkles
-                const sprinkleColors = [0xFF0000, 0xFF7F00, 0xFFFF00, 0x00FF00, 0x0000FF, 0x4B0082, 0x9400D3];
+                // Sprinkles (Initial creation)
+                createSprinkles(); // Refactored to a separate function
+                
+                scene.add(donutGroup);
+
+                // Add pointer listeners for Glazery
+                dom.glazery.canvas.addEventListener('pointerdown', onPointerDown);
+                dom.glazery.canvas.addEventListener('pointermove', onPointerMove);
+                dom.glazery.canvas.addEventListener('pointerup', onPointerUp);
+                dom.glazery.canvas.addEventListener('pointerleave', onPointerUp);
+                dom.glazery.canvas.addEventListener('wheel', onMouseWheel, { passive: false });
+                
+                // Setup zoom slider
+                dom.glazery.zoomSlider.min = MIN_ZOOM_Z;
+                dom.glazery.zoomSlider.max = MAX_ZOOM_Z;
+                dom.glazery.zoomSlider.value = currentCameraZ;
+                dom.glazery.zoomSlider.step = 0.1;
+
+                isThreeJSInitialized = true; 
+            }
+
+            function createSprinkles() {
+                // Remove existing sprinkles if any
+                sprinkleMeshes.forEach(sprinkle => donutGroup.remove(sprinkle));
+                sprinkleMeshes = [];
+
+                const currentColors = sprinkleColorSets[currentSprinkleColorSetIndex];
+
                 const sprinkleShape = new THREE.CylinderGeometry(0.06, 0.06, 0.4, 8); 
                 const numSprinkles = 800; 
                 const R_sprinkle = 2.8; 
                 const r_sprinkle = 1.3 * 0.9; 
 
                 for (let i = 0; i < numSprinkles; i++) {
-                    const color = sprinkleColors[Math.floor(Math.random() * sprinkleColors.length)];
+                    const color = currentColors[Math.floor(Math.random() * currentColors.length)];
                     const sprinkleMaterial = new THREE.MeshStandardMaterial({ color: color });
                     const sprinkle = new THREE.Mesh(sprinkleShape, sprinkleMaterial);
                     const u = Math.random() * 2 * Math.PI; 
@@ -1091,25 +1145,10 @@
                     sprinkle.rotateX(Math.PI / 2); 
                     sprinkle.rotation.z += Math.random() * Math.PI; 
                     donutGroup.add(sprinkle);
+                    sprinkleMeshes.push(sprinkle); // Store reference
                 }
-                
-                scene.add(donutGroup);
-
-                // Add pointer listeners for Glazery
-                dom.glazery.canvas.addEventListener('pointerdown', onPointerDown);
-                dom.glazery.canvas.addEventListener('pointermove', onPointerMove);
-                dom.glazery.canvas.addEventListener('pointerup', onPointerUp);
-                dom.glazery.canvas.addEventListener('pointerleave', onPointerUp);
-                dom.glazery.canvas.addEventListener('wheel', onMouseWheel, { passive: false });
-                
-                // Setup zoom slider
-                dom.glazery.zoomSlider.min = MIN_ZOOM_Z;
-                dom.glazery.zoomSlider.max = MAX_ZOOM_Z;
-                dom.glazery.zoomSlider.value = currentCameraZ;
-                dom.glazery.zoomSlider.step = 0.1;
-
-                isThreeJSInitialized = true; 
             }
+
 
             // ===============================================================
             // UNIVERSAL 3D CONTROLS & ANIMATION
@@ -1250,6 +1289,18 @@
                 }
             }
 
+            function changeDonutBaseColor() { // NEW
+                if (donutMaterial) {
+                    currentDonutBaseColorIndex = (currentDonutBaseColorIndex + 1) % donutBaseColors.length;
+                    donutMaterial.color.set(donutBaseColors[currentDonutBaseColorIndex]);
+                }
+            }
+
+            function changeSprinkleColor() { // NEW
+                currentSprinkleColorSetIndex = (currentSprinkleColorSetIndex + 1) % sprinkleColorSets.length;
+                createSprinkles(); // Recreate sprinkles with new color set
+            }
+
 
             // ===============================================================
             // RENDER/UPDATE FUNCTIONS
@@ -1373,6 +1424,14 @@
             dom.glazery.glazeColorButton.onclick = () => {
                 playSoundEffect('crunch');
                 changeGlazeColor();
+            };
+            dom.glazery.sprinkleColorButton.onclick = () => { // NEW
+                playSoundEffect('crunch');
+                changeSprinkleColor();
+            };
+            dom.glazery.donutBaseColorButton.onclick = () => { // NEW
+                playSoundEffect('crunch');
+                changeDonutBaseColor();
             };
 
             // NEW MODAL LISTENERS
