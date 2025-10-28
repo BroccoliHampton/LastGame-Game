@@ -1494,6 +1494,39 @@
             
             animate();
 
+
+            // ===============================================================
+            // FETCH GLAZE PRICE FUNCTION (ADDED - WAS MISSING)
+            // ===============================================================
+            async function fetchGlazePrice() {
+                try {
+                    console.log('[Glaze Price] Fetching current glaze price...');
+                    const response = await fetch('/api/get-price');
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    
+                    // Update state with the fetched price
+                    const price = parseFloat(data.priceInUsdc || '0');
+                    if (!state.global) state.global = {};
+                    state.global.currentGlazePrice = price;
+                    
+                    console.log(`[Glaze Price] Current glaze price: $${price} USDC`);
+                    
+                    return data;
+                } catch (error) {
+                    console.error('[Glaze Price] Error fetching price:', error.message);
+                    return null;
+                }
+            }
+
             // ===============================================================
             // WALLET CONNECTION & PRICE FETCHING (Silent, in background)
             // ===============================================================
