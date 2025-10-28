@@ -1504,13 +1504,15 @@
                     const response = await fetch('/api/get-price');
                     
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        console.warn(`[Glaze Price] API returned ${response.status}`);
+                        return null;
                     }
                     
                     const data = await response.json();
                     
                     if (data.error) {
-                        throw new Error(data.error);
+                        console.warn('[Glaze Price] API returned error:', data.error);
+                        return null;
                     }
                     
                     // Update state with the fetched price
@@ -1528,27 +1530,45 @@
             }
 
             // ===============================================================
-            // WALLET CONNECTION & PRICE FETCHING (Silent, in background)
+            // WALLET CONNECTION & PRICE FETCHING (ROBUST VERSION)
             // ===============================================================
             (async () => {
-                try {
-                    console.log('[Wallet] Connecting...');
-                    const { default: sdk } = await import('https://esm.sh/@farcaster/miniapp-sdk');
-                    await sdk.actions.ready();
-                    const provider = await sdk.wallet.getEthereumProvider();
-                    if (provider) {
-                        await provider.request({ method: 'eth_requestAccounts' });
-                        console.log('[Wallet] Connected successfully');
-                    }
-                } catch (error) {
-                    console.log('[Wallet] Connection failed (optional):', error.message);
-                }
-                
-                // Fetch glaze price after wallet connection
+                // First, try to fetch the price (doesn't require wallet)
                 await fetchGlazePrice();
                 
-                // Update price every 10 seconds
+                // Set up periodic price updates
                 setInterval(fetchGlazePrice, 10000);
+                
+                // Now try wallet connection - but don't let failures break the app
+                try {
+                    console.log('[Wallet] Attempting to connect to Farcaster SDK...');
+                    
+                    // Set a timeout for the SDK import
+                    const sdkPromise = import('https://esm.sh/@farcaster/miniapp-sdk');
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('SDK import timeout')), 5000)
+                    );
+                    
+                    const { default: sdk } = await Promise.race([sdkPromise, timeoutPromise]);
+                    
+                    console.log('[Wallet] SDK loaded, calling ready()...');
+                    await sdk.actions.ready();
+                    
+                    console.log('[Wallet] Getting Ethereum provider...');
+                    const provider = await sdk.wallet.getEthereumProvider();
+                    
+                    if (provider) {
+                        console.log('[Wallet] Provider found, requesting accounts...');
+                        const accounts = await provider.request({ method: 'eth_requestAccounts' });
+                        console.log('[Wallet] Connected successfully:', accounts[0]);
+                    } else {
+                        console.log('[Wallet] No provider available - running outside miniapp context');
+                    }
+                } catch (error) {
+                    // Don't throw - just log and continue
+                    console.log('[Wallet] Could not connect (this is OK if testing outside Farcaster):', error.message);
+                    console.log('[Wallet] Game will continue to work, but payment features require Farcaster miniapp');
+                }
             })();
         });
     </script>
